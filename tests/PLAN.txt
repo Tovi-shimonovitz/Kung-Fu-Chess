@@ -1,0 +1,8 @@
+אתחול: main → BoardParser::parseFromCsv(board.csv) → Board → GameEngine → Controller → GraphicsRunner 
+(פותח חלון גודל-משתנה + רושם מאזין עכבר).
+
+כל פריים (onWait, נקרא מתוך GameEngine::wait): BoardRenderer מרנדר את הלוח בגודלו הטבעי → GraphicsRunner שואל את גודל החלון הנוכחי → מעביר את שניהם ל-BoardFrameManager::compose שמחשב BoardLayout (דרך BoardMapper::computeLayout הסטטית), מרכיב קנבס (רקע + לוח מוקטן/מוגדל וממורכז), ומפרסם את ה-layout הטרי אל תוך ה-BoardMapper המשותף דרך updateLayout(...) → GraphicsRunner מציג (imshow) את הקנבס. אין העברה מפורשת של layout בין GraphicsRunner ל-Controller — הם חולקים את אותו BoardMapper.
+
+קליק עכבר: OpenCV קורא ל-mouseTrampoline → GraphicsRunner::onMouse → Controller::handleInput(x,y) (פיקסלים גולמיים של החלון, בלי המרה) → Controller מעביר את זה כמות שהוא ל-m_boardMapper.pixelToCell(x,y) — ה-Controller לא יודע כלום על "layout"/גודל חלון, רק מבקש מה-BoardMapper "תמיר לי פיקסלים לתא", וזה משתמש ב-state הפנימי העדכני שלו (שעודכן ב-onWait האחרון) → Position (שורה,עמודה) → כמו היום: בחירת כלי / בקשת מהלך דרך GameEngine.
+
+שינוי גודל חלון: לא צריך קוד מיוחד לאירוע resize — כל פריים ממילא שואל מחדש את cv::getWindowImageRect ומחשב layout טרי, כך שמרכוז/קנה-מידה מתעדכנים אוטומטית בפריים הבא.
