@@ -51,6 +51,16 @@ Img Img::blank(int width, int height, int channels) {
     return result;
 }
 
+Img Img::clone() const {
+    if (img.empty()) {
+        throw std::runtime_error("Image not loaded.");
+    }
+
+    Img result;
+    result.img = img.clone();
+    return result;
+}
+
 void Img::draw_on(Img& other_img, int x, int y) {
     if (img.empty() || other_img.img.empty()) {
         throw std::runtime_error("Both images must be loaded before drawing.");

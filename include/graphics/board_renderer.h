@@ -18,5 +18,6 @@ private:
 
     std::string boardImagePath;
     SpriteRepository& spriteRepository;
+    Img boardImage;
     std::unordered_map<Piece*, PieceAnimator> animators;
 };

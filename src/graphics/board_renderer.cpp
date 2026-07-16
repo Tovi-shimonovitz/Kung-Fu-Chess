@@ -4,7 +4,9 @@
 #include <unordered_set>
 
 BoardRenderer::BoardRenderer(std::string boardImagePath, SpriteRepository& spriteRepository)
-    : boardImagePath(std::move(boardImagePath)), spriteRepository(spriteRepository) {}
+    : boardImagePath(std::move(boardImagePath)), spriteRepository(spriteRepository) {
+    boardImage.read(this->boardImagePath);
+}
 
 PieceAnimator& BoardRenderer::animatorFor(Piece* piece) {
     auto found = animators.find(piece);
@@ -35,8 +37,7 @@ void BoardRenderer::removeStaleAnimators(const GameSnapshot& snapshot) {
 Img BoardRenderer::render(const GameSnapshot& snapshot, int elapsedMs) {
     removeStaleAnimators(snapshot);
 
-    Img frame;
-    frame.read(boardImagePath);
+    Img frame = boardImage.clone();
 
     CellSize realCellSize{
         static_cast<double>(frame.get_mat().cols) / snapshot.width,

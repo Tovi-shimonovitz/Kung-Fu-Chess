@@ -96,6 +96,9 @@ Board BoardParser::parseFromCsv(const std::string& filePath) {
         while (std::getline(ss, cell, ',')) {
             row.push_back(cell);
         }
+        if (line.back() == ',') {
+            row.push_back("");
+        }
         temp_grid.push_back(row);
     }
 

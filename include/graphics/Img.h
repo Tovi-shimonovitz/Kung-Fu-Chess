@@ -41,6 +41,11 @@ public:
     static Img blank(int width, int height, int channels);
 
     /**
+     * Return a deep copy of this image (independent pixel buffer).
+     */
+    Img clone() const;
+
+    /**
      * Draw this image onto another image at position (x, y)
      * 
      * @param other_img The target image to draw on

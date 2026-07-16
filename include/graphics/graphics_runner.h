@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <string>
 
 class GameEngine;
@@ -11,6 +12,7 @@ public:
     GraphicsRunner(GameEngine& engine, BoardRenderer& renderer,
                     BoardFrameManager& frameManager, Controller& controller,
                     std::string windowName);
+    ~GraphicsRunner();
 
     bool shouldQuit() const { return quitRequested; }
 
@@ -25,4 +27,5 @@ private:
     Controller& controller;
     std::string windowName;
     bool quitRequested;
+    std::size_t waitObserverId;
 };

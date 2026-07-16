@@ -4,6 +4,7 @@
 #include "../../include/rules/RuleEngine.h"
 #include "../../include/realtime/real_time_arbiter.h"
 #include "../../include/engine/Result_structs.h"
+#include <algorithm>
 #include <unordered_map>
 
 void GameEngine::setBoard(std::unique_ptr<Board> newBoard) {
@@ -26,15 +27,24 @@ WaitResult GameEngine::wait(int ms) {
         gameState.markGameOver();
     }
 
-    for (const WaitObserver& observer : waitObservers) {
+    for (const auto& [id, observer] : waitObservers) {
         observer(ms);
     }
 
     return result;
 }
 
-void GameEngine::addWaitObserver(WaitObserver observer) {
-    waitObservers.push_back(std::move(observer));
+WaitObserverId GameEngine::addWaitObserver(WaitObserver observer) {
+    WaitObserverId id = nextWaitObserverId++;
+    waitObservers.emplace_back(id, std::move(observer));
+    return id;
+}
+
+void GameEngine::removeWaitObserver(WaitObserverId id) {
+    waitObservers.erase(
+        std::remove_if(waitObservers.begin(), waitObservers.end(),
+                        [id](const auto& entry) { return entry.first == id; }),
+        waitObservers.end());
 }
 
 MoveResult GameEngine::requestMove(Position src, Position dst) {

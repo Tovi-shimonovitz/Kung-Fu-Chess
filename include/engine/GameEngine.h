@@ -10,6 +10,7 @@
 #include "../realtime/real_time_arbiter.h"
 
 using WaitObserver = std::function<void(int elapsedMs)>;
+using WaitObserverId = std::size_t;
 
 class GameEngine {
 public:
@@ -24,7 +25,8 @@ public:
     bool hasPieceAt(Position pos) const;
     void setBoard(std::unique_ptr<Board> newBoard);
 
-    void addWaitObserver(WaitObserver observer);
+    WaitObserverId addWaitObserver(WaitObserver observer);
+    void removeWaitObserver(WaitObserverId id);
 
 private:
     std::unique_ptr<Board> board;
@@ -32,5 +34,6 @@ private:
     std::unique_ptr<RealTimeArbiter> arbiter;
 
     GameState gameState;
-    std::vector<WaitObserver> waitObservers;
+    std::vector<std::pair<WaitObserverId, WaitObserver>> waitObservers;
+    WaitObserverId nextWaitObserverId = 0;
 };

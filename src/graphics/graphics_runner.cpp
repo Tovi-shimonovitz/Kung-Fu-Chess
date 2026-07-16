@@ -12,7 +12,11 @@ GraphicsRunner::GraphicsRunner(GameEngine& engine, BoardRenderer& renderer,
       controller(controller), windowName(std::move(windowName)), quitRequested(false) {
     cv::namedWindow(this->windowName, cv::WINDOW_NORMAL);
     cv::setMouseCallback(this->windowName, &GraphicsRunner::mouseTrampoline, this);
-    engine.addWaitObserver([this](int elapsedMs) { onWait(elapsedMs); });
+    waitObserverId = engine.addWaitObserver([this](int elapsedMs) { onWait(elapsedMs); });
+}
+
+GraphicsRunner::~GraphicsRunner() {
+    engine.removeWaitObserver(waitObserverId);
 }
 
 void GraphicsRunner::mouseTrampoline(int event, int x, int y, int flags, void* userdata) {
@@ -26,15 +30,17 @@ void GraphicsRunner::onMouse(int event, int x, int y) {
 }
 
 void GraphicsRunner::onWait(int elapsedMs) {
-    GameSnapshot snapshot = engine.getSnapshot();
-    Img frame = renderer.render(snapshot, elapsedMs);
-    cv::Rect windowRect = cv::getWindowImageRect(windowName);  
-    Img canvas = frameManager.compose(frame, windowRect.width, 
-                windowRect.height, snapshot.width, snapshot.height);
-    cv::imshow(windowName, canvas.get_mat());    
-   
+    cv::Rect windowRect = cv::getWindowImageRect(windowName);
+    if (windowRect.width > 0 && windowRect.height > 0) {
+        GameSnapshot snapshot = engine.getSnapshot();
+        Img frame = renderer.render(snapshot, elapsedMs);
+        Img canvas = frameManager.compose(frame, windowRect.width,
+                    windowRect.height, snapshot.width, snapshot.height);
+        cv::imshow(windowName, canvas.get_mat());
+    }
+
     int key = cv::waitKey(1);
-    if (key == 27 || key == 'q') { 
+    if (key == 27 || key == 'q') {
         quitRequested = true;
     }
 }
