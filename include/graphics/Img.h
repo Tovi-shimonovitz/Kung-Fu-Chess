@@ -21,7 +21,25 @@ public:
               const std::pair<int, int>& size = {},
               bool keep_aspect = false,
               int interpolation = cv::INTER_AREA);
-    
+
+    /**
+     * Return a resized copy of this image, leaving this image unchanged.
+     *
+     * @param width Target width in pixels
+     * @param height Target height in pixels
+     * @param interpolation OpenCV interpolation flag
+     */
+    Img resized(int width, int height, int interpolation = cv::INTER_LINEAR) const;
+
+    /**
+     * Create a blank (all-zero) image of the given size and channel count.
+     *
+     * @param width Width in pixels
+     * @param height Height in pixels
+     * @param channels Number of channels (e.g. 3 for BGR, 4 for BGRA)
+     */
+    static Img blank(int width, int height, int channels);
+
     /**
      * Draw this image onto another image at position (x, y)
      * 

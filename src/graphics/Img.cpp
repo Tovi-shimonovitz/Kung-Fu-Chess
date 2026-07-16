@@ -35,6 +35,22 @@ Img& Img::read(const std::string& path,
     return *this;
 }
 
+Img Img::resized(int width, int height, int interpolation) const {
+    if (img.empty()) {
+        throw std::runtime_error("Image not loaded.");
+    }
+
+    Img result;
+    cv::resize(img, result.img, cv::Size(width, height), 0, 0, interpolation);
+    return result;
+}
+
+Img Img::blank(int width, int height, int channels) {
+    Img result;
+    result.img = cv::Mat::zeros(height, width, CV_8UC(channels));
+    return result;
+}
+
 void Img::draw_on(Img& other_img, int x, int y) {
     if (img.empty() || other_img.img.empty()) {
         throw std::runtime_error("Both images must be loaded before drawing.");

@@ -3,6 +3,7 @@
 #include <thread>
 #include "../../include/graphics/graphics_runner.h"
 #include "../../include/graphics/board_renderer.h"
+#include "../../include/graphics/board_frame_manager.h"
 #include "../../include/graphics/sprite_repository.h"
 #include "../../include/input/controller.h"
 #include "../../include/input/board_mapper.h"
@@ -28,9 +29,10 @@ int main() {
 
     SpriteRepository spriteRepository("third_party/images");
     BoardRenderer renderer("third_party/images/board.png", spriteRepository);
-    GraphicsRunner graphicsRunner(engine, renderer, "KungFuChess");
-
-    Controller controller(engine);
+    BoardMapper boardMapper;
+    BoardFrameManager frameManager(boardMapper);
+    Controller controller(engine, boardMapper);
+    GraphicsRunner graphicsRunner(engine, renderer, frameManager, controller, "KungFuChess");
 
     // click the white queen at (0,3), then click destination (3,3): straight move down the column
     controller.handleInput(pixelForCell(3), pixelForCell(0));

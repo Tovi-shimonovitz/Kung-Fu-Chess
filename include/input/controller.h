@@ -6,11 +6,12 @@
 
 class Controller {
 public:
-    Controller(GameEngine& engine);
-    
+    Controller(GameEngine& engine, BoardMapper& boardMapper);
+
     void handleInput(int x, int y);
 
 private:
     GameEngine& m_engine;
-    std::optional<Position> m_selectedPosition; 
+    BoardMapper& m_boardMapper;
+    std::optional<Position> m_selectedPosition;
 };

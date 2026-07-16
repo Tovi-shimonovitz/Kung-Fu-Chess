@@ -20,7 +20,8 @@ void test_click_selects_piece_then_moves_to_destination() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({1, 2}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {1, 2}));
     engine.setBoard(std::move(board));
-    Controller controller(engine);
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
 
     controller.handleInput(pixelFor(2), pixelFor(1)); // select (1,2)
     controller.handleInput(pixelFor(5), pixelFor(1)); // request move to (1,5)
@@ -37,7 +38,8 @@ void test_click_on_empty_square_selects_nothing() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({4, 4}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {4, 4}));
     engine.setBoard(std::move(board));
-    Controller controller(engine);
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
 
     controller.handleInput(pixelFor(0), pixelFor(0)); // empty square: no selection made
 
@@ -59,7 +61,8 @@ void test_click_outside_board_deselects_current_piece() {
     board->addPiece({2, 2}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {2, 2}));
     board->addPiece({5, 5}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::BISHOP, {5, 5}));
     engine.setBoard(std::move(board));
-    Controller controller(engine);
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
 
     controller.handleInput(pixelFor(2), pixelFor(2));  // select rook at (2,2)
     controller.handleInput(-100, -100);                // click outside the board: deselect
@@ -81,7 +84,8 @@ void test_illegal_destination_does_not_move_piece() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({0, 0}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {0, 0}));
     engine.setBoard(std::move(board));
-    Controller controller(engine);
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
 
     controller.handleInput(pixelFor(0), pixelFor(0)); // select rook
     controller.handleInput(pixelFor(5), pixelFor(5)); // diagonal: illegal for a rook

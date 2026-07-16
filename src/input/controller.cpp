@@ -3,12 +3,12 @@
 #include "../../include/engine/Result_structs.h"
 
 
-Controller::Controller(GameEngine& engine) 
-    : m_engine(engine), m_selectedPosition(std::nullopt) {}
+Controller::Controller(GameEngine& engine, BoardMapper& boardMapper)
+    : m_engine(engine), m_boardMapper(boardMapper), m_selectedPosition(std::nullopt) {}
 
 void Controller::handleInput(int x, int y) {
-   
-    auto targetPos = BoardMapper::pixelToCell(x, y);
+
+    auto targetPos = m_boardMapper.pixelWindowToCell(x, y);
     auto cur_snapshot = m_engine.getSnapshot();
 
     bool isInsideBoard = targetPos.row >= 0 && targetPos.row < cur_snapshot.height && 

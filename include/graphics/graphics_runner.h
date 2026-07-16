@@ -1,19 +1,28 @@
 #pragma once
 #include <string>
-#include "board_renderer.h"
-#include "../engine/GameEngine.h"
+
+class GameEngine;
+class BoardRenderer;
+class BoardFrameManager;
+class Controller;
 
 class GraphicsRunner {
 public:
-    GraphicsRunner(GameEngine& engine, BoardRenderer& renderer, std::string windowName);
+    GraphicsRunner(GameEngine& engine, BoardRenderer& renderer,
+                    BoardFrameManager& frameManager, Controller& controller,
+                    std::string windowName);
 
     bool shouldQuit() const { return quitRequested; }
 
 private:
+    static void mouseTrampoline(int event, int x, int y, int flags, void* userdata);
+    void onMouse(int event, int x, int y);
     void onWait(int elapsedMs);
 
     GameEngine& engine;
     BoardRenderer& renderer;
+    BoardFrameManager& frameManager;
+    Controller& controller;
     std::string windowName;
     bool quitRequested;
 };
