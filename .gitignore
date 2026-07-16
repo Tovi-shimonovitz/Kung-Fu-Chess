@@ -1,0 +1,20 @@
+# CMake build output
+build/
+
+# Vendored binaries and game assets - kept out of git, binaries bloat history instead of diffing cleanly
+third_party/
+
+# Safety net: no binary/image files anywhere in the repo, even outside third_party/
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.ico
+*.dll
+*.lib
+*.exe
+*.pdb
+
+# OS / editor cruft
+Thumbs.db
+.DS_Store
