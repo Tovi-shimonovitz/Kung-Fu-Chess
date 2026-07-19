@@ -12,11 +12,14 @@
 #include "input/board_mapper.h"
 #include "input/controller.h"
 #include "io/BoardParser.h"
+#include "io/env_config.h"
 #include "model/Board.h"
 
 int main() {
     try {
-        Board board = BoardParser::parseFromCsv("third_party/images/board.csv");
+        EnvConfig env = EnvConfig::load(".env");
+
+        Board board = BoardParser::parseFromCsv(env.get("BOARD_CSV_PATH"));
         int cellsWide = board.width;
         int cellsHigh = board.height;
 
@@ -24,19 +27,17 @@ int main() {
         engine.setBoard(std::make_unique<Board>(std::move(board)));
 
         BoardMapper boardMapper;
-        SpriteRepository spriteRepository("third_party/images");
-        BoardRenderer boardRenderer("third_party/images/board.png", spriteRepository);
+        SpriteRepository spriteRepository(env.get("SPRITE_REPOSITORY_PATH"));
+        BoardRenderer boardRenderer(env.get("BOARD_IMAGE_PATH"), spriteRepository);
         BoardFrameManager boardLayout(boardMapper, cellsWide, cellsHigh);
 
-        Canvas canvas(800, 800, 4);           
+        Canvas canvas(env.getInt("CANVAS_WIDTH"), env.getInt("CANVAS_HEIGHT"), env.getInt("CANVAS_CHANNELS"));
         RenderableElement boardElement;
         canvas.registerElement(boardElement, boardLayout);
         bindBoardElement(engine, boardRenderer, boardElement);   
 
         Controller controller(engine, boardMapper);
         GraphicsRunner graphicsRunner(engine, canvas, controller, "KungFuChess");
-
-        std::cout << "Window open - press ESC or 'q' inside it to quit." << std::endl;
 
         auto lastTime = std::chrono::steady_clock::now();
         while (!graphicsRunner.shouldQuit()) {
@@ -52,8 +53,7 @@ int main() {
             engine.wait(elapsedMs);
         }
 
-        std::cout << "Window closed." << std::endl;
-
+       
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;
