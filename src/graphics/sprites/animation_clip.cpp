@@ -1,4 +1,4 @@
-#include "../../include/graphics/animation_clip.h"
+#include "../../../include/graphics/sprites/animation_clip.h"
 #include <filesystem>
 #include <stdexcept>
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Img.h"
+#include "../Img.h"
 #include "animation_config.h"
 
 class AnimationClip {

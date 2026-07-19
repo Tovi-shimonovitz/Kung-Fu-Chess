@@ -1,10 +1,13 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
-#include "../../include/graphics/graphics_runner.h"
-#include "../../include/graphics/board_renderer.h"
-#include "../../include/graphics/board_frame_manager.h"
-#include "../../include/graphics/sprite_repository.h"
+#include "../../include/graphics/window/graphics_runner.h"
+#include "../../include/graphics/window/canvas.h"
+#include "../../include/graphics/window/renderable_element.h"
+#include "../../include/graphics/game_view_bindings.h"
+#include "../../include/graphics/board/board_renderer.h"
+#include "../../include/graphics/board/board_frame_manager.h"
+#include "../../include/graphics/sprites/sprite_repository.h"
 #include "../../include/input/controller.h"
 #include "../../include/input/board_mapper.h"
 #include "../../include/engine/GameEngine.h"
@@ -30,9 +33,15 @@ int main() {
     SpriteRepository spriteRepository("third_party/images");
     BoardRenderer renderer("third_party/images/board.png", spriteRepository);
     BoardMapper boardMapper;
-    BoardFrameManager frameManager(boardMapper);
+    BoardFrameManager frameManager(boardMapper, 8, 8);
+
+    Canvas canvas(800, 800, 4);
+    RenderableElement boardElement;
+    canvas.registerElement(boardElement, frameManager);
+    bindBoardElement(engine, renderer, boardElement);
+
     Controller controller(engine, boardMapper);
-    GraphicsRunner graphicsRunner(engine, renderer, frameManager, controller, "KungFuChess");
+    GraphicsRunner graphicsRunner(engine, canvas, controller, "KungFuChess");
 
     // click the white queen at (0,3), then click destination (3,3): straight move down the column
     controller.handleInput(pixelForCell(3), pixelForCell(0));

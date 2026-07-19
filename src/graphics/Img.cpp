@@ -110,6 +110,10 @@ void Img::draw_on(Img& other_img, int x, int y) {
     }
 }
 
+void Img::clear() {
+    img.setTo(cv::Scalar(0));
+}
+
 void Img::put_text(const std::string& txt, int x, int y, double font_size,
                    const cv::Scalar& color, int thickness) {
     if (img.empty()) {

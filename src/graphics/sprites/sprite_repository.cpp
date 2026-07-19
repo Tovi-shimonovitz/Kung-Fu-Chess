@@ -1,5 +1,5 @@
-#include "../../include/graphics/sprite_repository.h"
-#include "../../include/graphics/piece_code.h"
+#include "../../../include/graphics/sprites/sprite_repository.h"
+#include "../../../include/graphics/sprites/piece_code.h"
 #include <vector>
 
 SpriteRepository::SpriteRepository(std::string basePath) : basePath(std::move(basePath)) {}

@@ -1,4 +1,4 @@
-#include "../../include/graphics/animation_config.h"
+#include "../../../include/graphics/sprites/animation_config.h"
 #include <fstream>
 #include <stdexcept>
 #include <nlohmann/json.hpp>

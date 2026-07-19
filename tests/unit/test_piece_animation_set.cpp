@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "../../include/graphics/piece_animation_set.h"
+#include "../../include/graphics/sprites/piece_animation_set.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

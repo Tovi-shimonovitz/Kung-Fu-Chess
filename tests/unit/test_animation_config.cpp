@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include "../../include/graphics/animation_config.h"
+#include "../../include/graphics/sprites/animation_config.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

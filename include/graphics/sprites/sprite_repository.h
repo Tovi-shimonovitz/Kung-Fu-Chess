@@ -2,7 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include "piece_animation_set.h"
-#include "../model/Piece_enums.h"
+#include "../../model/Piece_enums.h"
 
 class SpriteRepository {
 public:

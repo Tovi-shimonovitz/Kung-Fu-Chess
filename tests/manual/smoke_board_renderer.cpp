@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "../../include/graphics/board_renderer.h"
-#include "../../include/graphics/sprite_repository.h"
+#include "../../include/graphics/board/board_renderer.h"
+#include "../../include/graphics/sprites/sprite_repository.h"
 #include "../../include/engine/GameEngine.h"
 #include "../../include/model/Board.h"
 #include "../../include/model/PieceFactory.h"

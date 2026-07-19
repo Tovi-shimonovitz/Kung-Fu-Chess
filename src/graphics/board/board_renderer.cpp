@@ -1,6 +1,6 @@
-#include "../../include/graphics/board_renderer.h"
-#include "../../include/input/board_mapper.h"
-#include "../../include/model/Piece.h"
+#include "../../../include/graphics/board/board_renderer.h"
+#include "../../../include/input/board_mapper.h"
+#include "../../../include/model/Piece.h"
 #include <unordered_set>
 
 BoardRenderer::BoardRenderer(std::string boardImagePath, SpriteRepository& spriteRepository)

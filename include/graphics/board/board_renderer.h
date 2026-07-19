@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include "Img.h"
-#include "sprite_repository.h"
-#include "piece_animator.h"
-#include "../engine/Result_structs.h"
+#include "../Img.h"
+#include "../sprites/sprite_repository.h"
+#include "../sprites/piece_animator.h"
+#include "../../engine/Result_structs.h"
 
 class BoardRenderer {
 public:

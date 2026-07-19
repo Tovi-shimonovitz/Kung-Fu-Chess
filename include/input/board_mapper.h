@@ -27,6 +27,7 @@ public:
       Position pixelWindowToCell(int windowX, int windowY) const;
       PixelPoint cellToPixelWindow(const ExactPosition& pos) const;
       void updateLayout(const BoardLayout& newLayout);
+      const BoardLayout& getLayout() const { return layout; }
 
 private:
       BoardLayout layout{ {0, 0}, {static_cast<double>(CELL_SIZE), static_cast<double>(CELL_SIZE)} };

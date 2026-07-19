@@ -1,4 +1,4 @@
-#include "../../include/graphics/piece_code.h"
+#include "../../../include/graphics/sprites/piece_code.h"
 #include <stdexcept>
 
 std::string PieceCode::shortCode(PieceColor color, PieceKind kind) {

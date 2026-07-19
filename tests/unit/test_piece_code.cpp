@@ -1,6 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include "../../include/graphics/piece_code.h"
+#include "../../include/graphics/sprites/piece_code.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

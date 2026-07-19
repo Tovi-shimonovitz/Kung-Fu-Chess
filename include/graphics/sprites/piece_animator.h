@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "piece_animation_set.h"
-#include "../model/Piece_enums.h"
+#include "../../model/Piece_enums.h"
 
 class PieceAnimator {
 public:

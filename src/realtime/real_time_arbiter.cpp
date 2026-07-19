@@ -71,10 +71,16 @@ std::vector<RealTimeArbiter::RedirectedArrival> RealTimeArbiter::detectCollision
 
     for (size_t i = 0; i < activeMotions.size(); ++i) {
         const Motion& motion = activeMotions[i];
+        if (motion.piece->kind == PieceKind::KNIGHT) {
+        continue;   
+        }
         Position currentSquare = roundToSquare(motion.currentPosition());
 
         for (size_t j = i + 1; j < activeMotions.size(); ++j) {
             const Motion& other = activeMotions[j];
+            if (other.piece->kind == PieceKind::KNIGHT) {
+                continue;   
+            }
             if (!(roundToSquare(other.currentPosition()) == currentSquare)) {
                 continue;
             }
@@ -84,7 +90,10 @@ std::vector<RealTimeArbiter::RedirectedArrival> RealTimeArbiter::detectCollision
         }
 
         Piece* stationary = board.getPieceAt(currentSquare);
-        if (stationary != nullptr && stationary != motion.piece && !isCurrentlyMoving(stationary)) {
+
+        if ( stationary != nullptr && 
+            stationary != motion.piece
+             && !isCurrentlyMoving(stationary)) {
             CollisionOutcome outcome = collisionResolver->resolveAgainstStationary(motion, *stationary);
             appendStationaryRedirect(outcome, motion, currentSquare, tickMs, redirects);
         }

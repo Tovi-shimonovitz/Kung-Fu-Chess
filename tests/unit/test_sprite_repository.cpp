@@ -4,8 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "../../include/graphics/sprite_repository.h"
-#include "../../include/graphics/piece_code.h"
+#include "../../include/graphics/sprites/sprite_repository.h"
+#include "../../include/graphics/sprites/piece_code.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

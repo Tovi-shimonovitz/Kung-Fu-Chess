@@ -1,4 +1,4 @@
-#include "../../include/graphics/piece_animation_set.h"
+#include "../../../include/graphics/sprites/piece_animation_set.h"
 #include <stdexcept>
 #include <vector>
 

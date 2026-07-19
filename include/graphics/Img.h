@@ -53,7 +53,12 @@ public:
      * @param y Y coordinate for top-left corner
      */
     void draw_on(Img& other_img, int x, int y);
-    
+
+    /**
+     * Zero out this image's pixels in place (no reallocation).
+     */
+    void clear();
+
     /**
      * Put text on the image
      * 

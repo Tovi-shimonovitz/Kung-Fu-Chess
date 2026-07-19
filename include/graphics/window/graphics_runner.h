@@ -3,15 +3,12 @@
 #include <string>
 
 class GameEngine;
-class BoardRenderer;
-class BoardFrameManager;
+class Canvas;
 class Controller;
 
 class GraphicsRunner {
 public:
-    GraphicsRunner(GameEngine& engine, BoardRenderer& renderer,
-                    BoardFrameManager& frameManager, Controller& controller,
-                    std::string windowName);
+    GraphicsRunner(GameEngine& engine, Canvas& canvas, Controller& controller, std::string windowName);
     ~GraphicsRunner();
 
     bool shouldQuit() const { return quitRequested; }
@@ -22,8 +19,7 @@ private:
     void onWait(int elapsedMs);
 
     GameEngine& engine;
-    BoardRenderer& renderer;
-    BoardFrameManager& frameManager;
+    Canvas& canvas;
     Controller& controller;
     std::string windowName;
     bool quitRequested;
