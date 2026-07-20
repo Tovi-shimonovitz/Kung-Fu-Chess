@@ -70,6 +70,7 @@ set(UNIT_TESTS
     test_piece_animation_set
     test_sprite_repository
     test_piece_animator
+    test_event_bus
 )
 
 foreach(test_name ${UNIT_TESTS})
