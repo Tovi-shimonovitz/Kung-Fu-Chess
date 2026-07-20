@@ -22,16 +22,53 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+# websocketpp (header-only) + standalone asio (header-only, no Boost) for the game server.
+# Populated without add_subdirectory: websocketpp's own CMakeLists expects Boost and
+# defines tests/install rules we don't need, so we only pull the source tree and wire
+# the headers in manually via an INTERFACE target.
+FetchContent_Declare(
+    websocketpp
+    GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
+    GIT_TAG 0.8.2
+)
+FetchContent_GetProperties(websocketpp)
+if(NOT websocketpp_POPULATED)
+    FetchContent_Populate(websocketpp)
+endif()
+
+FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-18-2
+)
+FetchContent_GetProperties(asio)
+if(NOT asio_POPULATED)
+    FetchContent_Populate(asio)
+endif()
+
+add_library(websocketpp_asio INTERFACE)
+target_include_directories(websocketpp_asio INTERFACE
+    "${websocketpp_SOURCE_DIR}"
+    "${asio_SOURCE_DIR}/asio/include")
+target_compile_definitions(websocketpp_asio INTERFACE ASIO_STANDALONE _WEBSOCKETPP_CPP11_STL_)
+if(WIN32)
+    target_link_libraries(websocketpp_asio INTERFACE ws2_32 wsock32)
+endif()
+
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/network/server_main.cpp")
 
 add_library(ChessLogic STATIC ${SOURCES})
-target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json)
+target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio)
 
 add_executable(ChessGame src/main.cpp)
 target_link_libraries(ChessGame PRIVATE ChessLogic)
 add_custom_command(TARGET ChessGame POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:ChessGame>")
+
+add_executable(ChessServer src/network/server_main.cpp)
+target_link_libraries(ChessServer PRIVATE ChessLogic)
 
 # temporary manual visual smoke check - not part of the automated test suite
 add_executable(smoke_board_renderer tests/manual/smoke_board_renderer.cpp)
@@ -71,6 +108,9 @@ set(UNIT_TESTS
     test_sprite_repository
     test_piece_animator
     test_event_bus
+    test_message_codec
+    test_connections_registry
+    test_message_router
 )
 
 foreach(test_name ${UNIT_TESTS})

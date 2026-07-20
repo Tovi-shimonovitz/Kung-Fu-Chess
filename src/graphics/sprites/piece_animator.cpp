@@ -35,7 +35,6 @@ void PieceAnimator::advance(int elapsedMs) {
             if (clip.config().isLoop) {
                 activeFrameIndex = 0;
             }
-            // not looping: freeze on the last frame, don't advance further
         } else {
             ++activeFrameIndex;
         }
