@@ -55,6 +55,17 @@ void RealTimeArbiter::processTick(int tickMs, Board& board, WaitResult& result) 
             ++it;
         }
     }
+
+    for (auto it = cooldowns.begin(); it != cooldowns.end(); ) {
+    it->remainingMs -= tickMs;
+    if (it->remainingMs <= 0) {
+        it->piece->state = PieceState::IDLE;
+        result.was_processed = true;   
+        it = cooldowns.erase(it);
+    } else {
+        ++it;
+    }
+}
 }
 
 bool RealTimeArbiter::isCurrentlyMoving(const Piece* piece) const {
@@ -157,9 +168,18 @@ void RealTimeArbiter::performArrival(const Motion& m, Board& board, WaitResult& 
     auto pieceAtTarget = board.getPieceAt(m.target);
 
     bool isKingEaten = pieceAtTarget != nullptr && pieceAtTarget->kind == PieceKind::KING;
+
+    if (pieceAtTarget != nullptr) {
+        cooldowns.erase(
+            std::remove_if(cooldowns.begin(), cooldowns.end(),
+                [pieceAtTarget](const Cooldown& c) { return c.piece == pieceAtTarget; }),
+            cooldowns.end());
+    }
+    
     board.movePiece(m.source, m.target);
-    m.piece->state = PieceState::IDLE;
-         
+    m.piece->state = PieceState:: COOLDOWN;
+    cooldowns.push_back({ m.piece, m.totalDurationMs() });
+
     if (isKingEaten) {
         result.message = "king_eaten";
     }

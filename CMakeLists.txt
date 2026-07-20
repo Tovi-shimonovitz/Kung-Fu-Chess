@@ -86,6 +86,11 @@ target_link_libraries(bbox_check PRIVATE ChessLogic)
 add_custom_command(TARGET bbox_check POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:bbox_check>")
 
+add_executable(smoke_network_client tests/manual/smoke_network_client.cpp)
+target_link_libraries(smoke_network_client PRIVATE ChessLogic)
+add_custom_command(TARGET smoke_network_client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_network_client>")
+
 enable_testing()
 
 set(UNIT_TESTS

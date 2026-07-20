@@ -27,3 +27,5 @@ struct Motion {
     ExactPosition positionAtElapsed(int elapsedMs) const;
     ExactPosition currentPosition() const;
 };
+
+struct Cooldown { Piece* piece; int remainingMs; };

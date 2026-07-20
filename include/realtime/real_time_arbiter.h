@@ -30,7 +30,7 @@ private:
 
     std::vector<Motion> activeMotions;
     std::unique_ptr<CollisionResolver> collisionResolver;
-
+    std::vector<Cooldown> cooldowns;   
     void performArrival(const Motion& m, Board& board,WaitResult &result);
     void processTick(int tickMs, Board& board, WaitResult& result);
 

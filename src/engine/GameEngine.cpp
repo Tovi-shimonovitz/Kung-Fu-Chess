@@ -76,6 +76,11 @@ bool GameEngine::hasPieceAt(Position pos) const {
     return board->getPieceAt(pos) != nullptr;
 }
 
+PieceColor GameEngine::colorAt(Position pos) const {
+    Piece* piece = board->getPieceAt(pos);
+    return piece ? piece->color : PieceColor::None;
+}
+
 GameSnapshot GameEngine::getSnapshot() const {
     GameSnapshot snapshot;
     snapshot.isGameOver = this->gameState.isGameOver();

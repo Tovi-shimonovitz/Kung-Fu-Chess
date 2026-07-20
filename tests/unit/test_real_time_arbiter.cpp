@@ -34,22 +34,44 @@ void test_motion_completes_and_moves_piece_on_arrival() {
     Piece* rook = board.getPieceAt({1, 0});
     RealTimeArbiter arbiter;
 
-    arbiter.startMotion(rook, {1, 0}, {1, 2});
+    arbiter.startMotion(rook, {1, 0}, {1, 2}); // 2 squares -> 2000ms
     WaitResult result = arbiter.advanceTime(2000, board);
 
     assert(arbiter.hasActiveMotion() == false);
     assert(board.getPieceAt({1, 0}) == nullptr);
     assert(board.getPieceAt({1, 2}) == rook);
-    assert(rook->state == PieceState::IDLE);
+    assert(rook->state == PieceState::COOLDOWN);   // ← במקום IDLE
     assert(result.was_processed == true);
     assert(result.message.find("motion_completed") != std::string::npos);
+
+    arbiter.advanceTime(2000, board);   // משך המנוחה = משך התנועה עצמה
+    assert(rook->state == PieceState::IDLE);   // ← עכשיו כן IDLE
 
     log_test("test_motion_completes_and_moves_piece_on_arrival");
 }
 
+void test_cooldown_piece_captured_does_not_crash() {
+   
+    Board board(8, 8);
+    board.addPiece({0, 0}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {0, 0}));
+    board.addPiece({3, 2}, PieceFactory::createPiece(PieceColor::BLACK, PieceKind::ROOK, {3, 2}));
+    Piece* whiteRook = board.getPieceAt({0, 0});
+    Piece* blackRook = board.getPieceAt({3, 2});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(whiteRook, {0, 0}, {0, 2});   
+    arbiter.startMotion(blackRook, {3, 2}, {0, 2});  
+
+    arbiter.advanceTime(3000, board);
+    assert(board.getPieceAt({0, 2}) == blackRook);  
+
+    arbiter.advanceTime(2000, board);
+
+    log_test("test_cooldown_piece_captured_does_not_crash");
+}
+
 void test_arrival_to_empty_square_does_not_crash() {
-    // Regression test: performArrival used to dereference a null piece pointer
-    // whenever a motion finished on a square with no occupant (the common case).
+    
     Board board(8, 8);
     board.addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::PAWN, {3, 3}));
     Piece* pawn = board.getPieceAt({3, 3});
@@ -76,7 +98,6 @@ void test_parallel_motions_finish_independently() {
     arbiter.startMotion(knight, {7, 7}, {5, 6}); // knight jump -> 2000ms (chebyshev distance 2)
 
     arbiter.advanceTime(1000, board);
-    // The rook should have arrived; the knight should still be mid-flight.
     assert(board.getPieceAt({0, 1}) == rook);
     assert(arbiter.hasActiveMotion() == true);
     assert(board.getPieceAt({7, 7}) == knight);
@@ -105,8 +126,7 @@ void test_king_capture_sets_king_eaten_message() {
 }
 
 void test_advance_time_in_arbitrary_chunks_matches_direct_call() {
-    // The tick-based loop (fixed 50ms internal steps) must produce the same
-    // outcome regardless of how the caller chunks up the elapsed milliseconds.
+   
     Board boardA(8, 8);
     boardA.addPiece({1, 0}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {1, 0}));
     Piece* rookA = boardA.getPieceAt({1, 0});
@@ -136,6 +156,7 @@ int main() {
 
     test_motion_stays_active_before_duration_elapses();
     test_motion_completes_and_moves_piece_on_arrival();
+    test_cooldown_piece_captured_does_not_crash();
     test_arrival_to_empty_square_does_not_crash();
     test_parallel_motions_finish_independently();
     test_king_capture_sets_king_eaten_message();

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "../model/Board.h"
+#include "../model/Piece_enums.h"
 #include "../rules/RuleEngine.h"
 #include "../realtime/real_time_arbiter.h"
 
@@ -23,6 +24,7 @@ public:
     GameSnapshot getSnapshot() const;
 
     bool hasPieceAt(Position pos) const;
+    PieceColor colorAt(Position pos) const;
     void setBoard(std::unique_ptr<Board> newBoard);
 
     WaitObserverId addWaitObserver(WaitObserver observer);
