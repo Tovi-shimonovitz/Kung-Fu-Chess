@@ -1,6 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include "../../include/network/message_codec.h"
+#include "../../include/network/protocol/message_codec.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

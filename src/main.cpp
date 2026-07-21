@@ -1,3 +1,8 @@
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -16,15 +21,17 @@
 #include "io/env_config.h"
 #include "model/Board.h"
 
-namespace {
-constexpr int TARGET_FRAME_MS = 16; // ~60 FPS
-}
-
 int main() {
     try {
+#ifdef _WIN32
+        SetProcessDPIAware();
+#endif
+
         EnvConfig env = EnvConfig::load(".env");
+        int targetFrameMs = env.getInt("TARGET_FRAME_MS");
 
         Board board = BoardParser::parseFromCsv(env.get("BOARD_CSV_PATH"));
+        std::cout << "board width " << board.width << std::endl;
         int cellsWide = board.width;
         int cellsHigh = board.height;
 
@@ -50,18 +57,14 @@ int main() {
                 std::chrono::duration_cast<std::chrono::milliseconds>(frameStart - previousTime).count());
             previousTime = frameStart;
 
-            if (elapsedMs <= 0) {
-                elapsedMs = 1;
-            }
-
             engine.wait(elapsedMs);
             canvas.refreshAll(engine.getSnapshot(), elapsedMs);
             graphicsRunner.render();
 
             auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - frameStart).count();
-            if (frameDuration < TARGET_FRAME_MS) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(TARGET_FRAME_MS - frameDuration));
+            if (frameDuration < targetFrameMs) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(targetFrameMs - frameDuration));
             }
         }
 

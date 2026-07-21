@@ -13,11 +13,11 @@ public:
     Img render(const GameSnapshot& snapshot, int elapsedMs);
 
 private:
-    PieceAnimator& animatorFor(Piece* piece);
+    PieceAnimator& animatorFor(const std::string& id, PieceColor color, PieceKind kind);
     void removeStaleAnimators(const GameSnapshot& snapshot);
 
     std::string boardImagePath;
     SpriteRepository& spriteRepository;
     Img boardImage;
-    std::unordered_map<Piece*, PieceAnimator> animators;
+    std::unordered_map<std::string, PieceAnimator> animators;
 };

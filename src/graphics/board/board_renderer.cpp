@@ -1,6 +1,5 @@
 #include "../../../include/graphics/board/board_renderer.h"
 #include "../../../include/input/board_mapper.h"
-#include "../../../include/model/Piece.h"
 #include <unordered_set>
 
 BoardRenderer::BoardRenderer(std::string boardImagePath, SpriteRepository& spriteRepository)
@@ -8,21 +7,21 @@ BoardRenderer::BoardRenderer(std::string boardImagePath, SpriteRepository& sprit
     boardImage.read(this->boardImagePath);
 }
 
-PieceAnimator& BoardRenderer::animatorFor(Piece* piece) {
-    auto found = animators.find(piece);
+PieceAnimator& BoardRenderer::animatorFor(const std::string& id, PieceColor color, PieceKind kind) {
+    auto found = animators.find(id);
     if (found != animators.end()) {
         return found->second;
     }
 
-    PieceAnimationSet& animationSet = spriteRepository.get(piece->color, piece->kind);
-    auto inserted = animators.emplace(piece, PieceAnimator(animationSet));
+    PieceAnimationSet& animationSet = spriteRepository.get(color, kind);
+    auto inserted = animators.emplace(id, PieceAnimator(animationSet));
     return inserted.first->second;
 }
 
 void BoardRenderer::removeStaleAnimators(const GameSnapshot& snapshot) {
-    std::unordered_set<Piece*> stillOnBoard;
+    std::unordered_set<std::string> stillOnBoard;
     for (const MovingPiece& entry : snapshot.pieces) {
-        stillOnBoard.insert(entry.piece);
+        stillOnBoard.insert(entry.id);
     }
 
     for (auto it = animators.begin(); it != animators.end(); ) {
@@ -45,13 +44,12 @@ Img BoardRenderer::render(const GameSnapshot& snapshot, int elapsedMs) {
     };
 
     for (const MovingPiece& entry : snapshot.pieces) {
-        Piece* piece = entry.piece;
-        if (piece->state == PieceState::CAPTURED) {
+        if (entry.state == PieceState::CAPTURED) {
             continue;
         }
 
-        PieceAnimator& animator = animatorFor(piece);
-        animator.syncToGameState(piece->state);
+        PieceAnimator& animator = animatorFor(entry.id, entry.color, entry.kind);
+        animator.syncToGameState(entry.state);
         animator.advance(elapsedMs);
 
         PixelPoint pixel = BoardMapper::cellToPixel(entry.currentPos, realCellSize);

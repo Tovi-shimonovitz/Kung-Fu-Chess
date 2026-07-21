@@ -149,6 +149,60 @@ void test_advance_time_in_arbitrary_chunks_matches_direct_call() {
     log_test("test_advance_time_in_arbitrary_chunks_matches_direct_call");
 }
 
+void test_bishop_motion_completes_diagonally() {
+    Board board(8, 8);
+    board.addPiece({0, 0}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::BISHOP, {0, 0}));
+    Piece* bishop = board.getPieceAt({0, 0});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(bishop, {0, 0}, {3, 3}); // 3 squares diagonally -> 3000ms
+    WaitResult result = arbiter.advanceTime(3000, board);
+
+    assert(arbiter.hasActiveMotion() == false);
+    assert(board.getPieceAt({0, 0}) == nullptr);
+    assert(board.getPieceAt({3, 3}) == bishop);
+    assert(bishop->state == PieceState::COOLDOWN);
+    assert(result.was_processed == true);
+
+    log_test("test_bishop_motion_completes_diagonally");
+}
+
+void test_queen_motion_completes_diagonally() {
+    Board board(8, 8);
+    board.addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::QUEEN, {3, 3}));
+    Piece* queen = board.getPieceAt({3, 3});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(queen, {3, 3}, {6, 6}); // 3 squares diagonally -> 3000ms
+    WaitResult result = arbiter.advanceTime(3000, board);
+
+    assert(arbiter.hasActiveMotion() == false);
+    assert(board.getPieceAt({3, 3}) == nullptr);
+    assert(board.getPieceAt({6, 6}) == queen);
+    assert(queen->state == PieceState::COOLDOWN);
+    assert(result.was_processed == true);
+
+    log_test("test_queen_motion_completes_diagonally");
+}
+
+void test_king_motion_completes_one_square() {
+    Board board(8, 8);
+    board.addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KING, {3, 3}));
+    Piece* king = board.getPieceAt({3, 3});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(king, {3, 3}, {4, 4}); // 1 square -> 1000ms
+    WaitResult result = arbiter.advanceTime(1000, board);
+
+    assert(arbiter.hasActiveMotion() == false);
+    assert(board.getPieceAt({3, 3}) == nullptr);
+    assert(board.getPieceAt({4, 4}) == king);
+    assert(king->state == PieceState::COOLDOWN);
+    assert(result.was_processed == true);
+
+    log_test("test_king_motion_completes_one_square");
+}
+
 int main() {
     std::cout << "========================================" << std::endl;
     std::cout << " STARTING REAL-TIME ARBITER UNIT TESTS " << std::endl;
@@ -161,6 +215,9 @@ int main() {
     test_parallel_motions_finish_independently();
     test_king_capture_sets_king_eaten_message();
     test_advance_time_in_arbitrary_chunks_matches_direct_call();
+    test_bishop_motion_completes_diagonally();
+    test_queen_motion_completes_diagonally();
+    test_king_motion_completes_one_square();
 
     std::cout << "========================================" << std::endl;
     std::cout << " ALL TESTS EXECUTED                    " << std::endl;

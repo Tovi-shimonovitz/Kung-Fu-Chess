@@ -1,6 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include "../../include/network/connections_registry.h"
+#include "../../include/network/registry/connections_registry.h"
 
 void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;

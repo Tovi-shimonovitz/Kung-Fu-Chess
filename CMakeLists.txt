@@ -4,6 +4,10 @@ project(KungFuChess CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(MSVC)
+    add_compile_options(/FS)
+endif()
+
 include_directories(include)
 
 # vendored OpenCV (headers + prebuilt Debug/Release .lib+.dll under third_party/opencv)
@@ -57,7 +61,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
-list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/network/server_main.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp")
 
 add_library(ChessLogic STATIC ${SOURCES})
 target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio)
@@ -67,7 +71,7 @@ target_link_libraries(ChessGame PRIVATE ChessLogic)
 add_custom_command(TARGET ChessGame POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:ChessGame>")
 
-add_executable(ChessServer src/network/server_main.cpp)
+add_executable(ChessServer src/server_main.cpp)
 target_link_libraries(ChessServer PRIVATE ChessLogic)
 
 # temporary manual visual smoke check - not part of the automated test suite
@@ -90,6 +94,11 @@ add_executable(smoke_network_client tests/manual/smoke_network_client.cpp)
 target_link_libraries(smoke_network_client PRIVATE ChessLogic)
 add_custom_command(TARGET smoke_network_client POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_network_client>")
+
+add_executable(smoke_two_players tests/manual/smoke_two_players.cpp)
+target_link_libraries(smoke_two_players PRIVATE ChessLogic)
+add_custom_command(TARGET smoke_two_players POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_two_players>")
 
 enable_testing()
 
@@ -121,5 +130,5 @@ set(UNIT_TESTS
 foreach(test_name ${UNIT_TESTS})
     add_executable(${test_name} tests/unit/${test_name}.cpp)
     target_link_libraries(${test_name} PRIVATE ChessLogic)
-    add_test(NAME ${test_name} COMMAND ${test_name})
+    add_test(NAME ${test_name} COMMAND ${test_name} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endforeach()

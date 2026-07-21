@@ -1,4 +1,4 @@
-#include "../../include/network/message_codec.h"
+#include "../../../include/network/protocol/message_codec.h"
 #include <stdexcept>
 
 namespace {

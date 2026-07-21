@@ -59,10 +59,6 @@ int main() {
             std::chrono::duration_cast<std::chrono::milliseconds>(now - previousTime).count());
         previousTime = now;
 
-        if (elapsedMs <= 0) {
-            elapsedMs = 1;
-        }
-
         engine.wait(elapsedMs);
         canvas.refreshAll(engine.getSnapshot(), elapsedMs);
         graphicsRunner.render();

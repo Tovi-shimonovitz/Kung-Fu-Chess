@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <unordered_map>
-#include "connection_info.h"
+#include "../connection_info.h"
 
 class ConnectionsRegistry {
 public:

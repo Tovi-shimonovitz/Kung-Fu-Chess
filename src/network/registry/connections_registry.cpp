@@ -1,4 +1,4 @@
-#include "../../include/network/connections_registry.h"
+#include "../../../include/network/registry/connections_registry.h"
 
 void ConnectionsRegistry::add(ConnectionId id) {
     connections_[id] = ConnectionInfo{id};

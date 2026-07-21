@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "../model/Position.h"
+#include "../../model/Position.h"
 
 enum class MessageType {
     Register,

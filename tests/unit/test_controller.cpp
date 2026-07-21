@@ -97,6 +97,78 @@ void test_illegal_destination_does_not_move_piece() {
     log_test("test_illegal_destination_does_not_move_piece");
 }
 
+void test_click_moves_queen_diagonally() {
+    GameEngine engine;
+    auto board = std::make_unique<Board>(8, 8);
+    board->addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::QUEEN, {3, 3}));
+    engine.setBoard(std::move(board));
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
+
+    controller.handleInput(pixelFor(3), pixelFor(3)); // select queen at (3,3)
+    controller.handleInput(pixelFor(6), pixelFor(6)); // diagonal move to (6,6)
+
+    engine.wait(3000); // 3 squares of travel time
+
+    assert(engine.hasPieceAt({3, 3}) == false);
+    assert(engine.hasPieceAt({6, 6}) == true);
+    log_test("test_click_moves_queen_diagonally");
+}
+
+void test_click_moves_knight_in_l_shape() {
+    GameEngine engine;
+    auto board = std::make_unique<Board>(8, 8);
+    board->addPiece({4, 4}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KNIGHT, {4, 4}));
+    engine.setBoard(std::move(board));
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
+
+    controller.handleInput(pixelFor(4), pixelFor(4)); // select knight at (4,4)
+    controller.handleInput(pixelFor(5), pixelFor(6)); // L-shaped move to (6,5)
+
+    engine.wait(2000); // 2 squares of travel time
+
+    assert(engine.hasPieceAt({4, 4}) == false);
+    assert(engine.hasPieceAt({6, 5}) == true);
+    log_test("test_click_moves_knight_in_l_shape");
+}
+
+void test_click_moves_king_one_square() {
+    GameEngine engine;
+    auto board = std::make_unique<Board>(8, 8);
+    board->addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KING, {3, 3}));
+    engine.setBoard(std::move(board));
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
+
+    controller.handleInput(pixelFor(3), pixelFor(3)); // select king at (3,3)
+    controller.handleInput(pixelFor(4), pixelFor(4)); // one square diagonally to (4,4)
+
+    engine.wait(1000);
+
+    assert(engine.hasPieceAt({3, 3}) == false);
+    assert(engine.hasPieceAt({4, 4}) == true);
+    log_test("test_click_moves_king_one_square");
+}
+
+void test_click_moves_pawn_forward() {
+    GameEngine engine;
+    auto board = std::make_unique<Board>(8, 8);
+    board->addPiece({6, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::PAWN, {6, 3}));
+    engine.setBoard(std::move(board));
+    BoardMapper boardMapper;
+    Controller controller(engine, boardMapper);
+
+    controller.handleInput(pixelFor(3), pixelFor(6)); // select pawn at (6,3)
+    controller.handleInput(pixelFor(3), pixelFor(4)); // double-step forward to (4,3)
+
+    engine.wait(2000); // 2 squares of travel time
+
+    assert(engine.hasPieceAt({6, 3}) == false);
+    assert(engine.hasPieceAt({4, 3}) == true);
+    log_test("test_click_moves_pawn_forward");
+}
+
 int main() {
     std::cout << "========================================" << std::endl;
     std::cout << " STARTING CONTROLLER UNIT TESTS        " << std::endl;
@@ -106,6 +178,10 @@ int main() {
     test_click_on_empty_square_selects_nothing();
     test_click_outside_board_deselects_current_piece();
     test_illegal_destination_does_not_move_piece();
+    test_click_moves_queen_diagonally();
+    test_click_moves_knight_in_l_shape();
+    test_click_moves_king_one_square();
+    test_click_moves_pawn_forward();
 
     std::cout << "========================================" << std::endl;
     std::cout << " ALL CONTROLLER TESTS EXECUTED         " << std::endl;

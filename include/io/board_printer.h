@@ -7,5 +7,5 @@ public:
     void print(const GameSnapshot& snapshot) const;
 
 private:
-    static char pieceToChar(const Piece& piece);
+    static char pieceToChar(PieceKind kind);
 };

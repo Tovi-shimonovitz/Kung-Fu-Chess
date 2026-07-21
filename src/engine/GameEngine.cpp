@@ -98,7 +98,7 @@ GameSnapshot GameEngine::getSnapshot() const {
             ? found->second
             : ExactPosition{static_cast<double>(piece->position.row), static_cast<double>(piece->position.col)};
 
-        snapshot.pieces.push_back(MovingPiece{piece, currentPos});
+        snapshot.pieces.push_back(MovingPiece{piece->id, piece->color, piece->kind, piece->state, currentPos});
     }
 
     return snapshot;

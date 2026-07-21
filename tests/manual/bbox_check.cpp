@@ -5,7 +5,6 @@ int main() {
     cv::Mat board = cv::imread("third_party/images/board.png", cv::IMREAD_UNCHANGED);
     std::cout << "board size: " << board.cols << "x" << board.rows << " channels=" << board.channels() << "\n";
 
-    // sample a horizontal strip near the top to find where square color changes happen
     int y = 5;
     cv::Vec3b prev = board.at<cv::Vec3b>(y, 0);
     std::cout << "color changes along row y=" << y << ": x=0";

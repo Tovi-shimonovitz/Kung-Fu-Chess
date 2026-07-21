@@ -6,7 +6,7 @@
 GraphicsRunner::GraphicsRunner(Canvas& canvas, Controller& controller, std::string windowName)
     : canvas(canvas), controller(controller),
       windowName(std::move(windowName)), quitRequested(false) {
-    cv::namedWindow(this->windowName, cv::WINDOW_NORMAL | cv::WINDOW_FREERATIO);
+    cv::namedWindow(this->windowName, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO);
     cv::setMouseCallback(this->windowName, &GraphicsRunner::mouseTrampoline, this);
 }
 

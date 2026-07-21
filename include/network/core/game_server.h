@@ -5,14 +5,16 @@
 #include <unordered_map>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
-#include "connection_info.h"
-#include "connections_registry.h"
-#include "message_router.h"
+#include "../connection_info.h"
+#include "../registry/connections_registry.h"
+
+class MessageRouter;
 
 class GameServer {
 public:
-    GameServer(ConnectionsRegistry& registry, MessageRouter& router);
+    explicit GameServer(ConnectionsRegistry& registry);
 
+    void setRouter(MessageRouter& router);
     void run(std::uint16_t port);
     void send(ConnectionId id, const std::string& text);
 
@@ -22,7 +24,7 @@ private:
 
     WsServer server_;
     ConnectionsRegistry& registry_;
-    MessageRouter& router_;
+    MessageRouter* router_ = nullptr;
 
     std::map<ConnectionHandle, ConnectionId, std::owner_less<ConnectionHandle>> handleToId_;
     std::unordered_map<ConnectionId, ConnectionHandle> idToHandle_;

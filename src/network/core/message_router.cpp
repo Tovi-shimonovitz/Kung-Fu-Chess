@@ -1,8 +1,12 @@
-#include "../../include/network/message_router.h"
-#include "../../include/network/message_codec.h"
+#include "../../../include/network/core/message_router.h"
+#include "../../../include/network/protocol/message_codec.h"
+#include "../../../include/network/core/matchmaker.h"
+#include "../../../include/network/registry/games_registry.h"
+#include "../../../include/network/room/room_worker.h"
 #include <iostream>
 
-MessageRouter::MessageRouter(ConnectionsRegistry& registry) : registry_(registry) {}
+MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games)
+    : registry_(registry), matchmaker_(matchmaker), games_(games) {}
 
 bool MessageRouter::isAllowed(ConnectionStatus status, MessageType type) const {
     switch (status) {
@@ -39,14 +43,17 @@ void MessageRouter::handleRegister(ConnectionId connectionId, const RawMessage& 
 
 void MessageRouter::handlePlayRequest(ConnectionId connectionId, const RawMessage& raw) {
     MessageCodec::parsePlayRequest(raw);
-    std::cout << "[Router] connection " << connectionId
-              << " requested to play (matchmaking not implemented yet)" << std::endl;
+    matchmaker_.handlePlayRequest(connectionId);
 }
 
 void MessageRouter::handleMoveRequest(ConnectionId connectionId, const RawMessage& raw) {
     MoveRequestMessage message = MessageCodec::parseMoveRequest(raw);
-    std::cout << "[Router] connection " << connectionId << " move from ("
-              << message.from.row << "," << message.from.col << ") to ("
-              << message.to.row << "," << message.to.col
-              << ") (game logic not wired yet)" << std::endl;
+
+    auto info = registry_.get(connectionId);
+    if (!info || !info->gameId) return;
+
+    RoomWorker* room = games_.find(*info->gameId);
+    if (!room) return;
+
+    room->postMoveRequest(connectionId, message.from, message.to);
 }

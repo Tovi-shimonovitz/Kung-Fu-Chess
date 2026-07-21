@@ -7,8 +7,6 @@
 #include "../model/Piece_enums.h"
 #include "../realtime/motion.h"
 
-class Piece;
-
 struct MoveResult {
     bool is_accepted;
     std::string reason;
@@ -20,7 +18,10 @@ struct WaitResult {
 };
 
 struct MovingPiece {
-    Piece* piece;
+    std::string id;
+    PieceColor color;
+    PieceKind kind;
+    PieceState state;
     ExactPosition currentPos;
 };
 

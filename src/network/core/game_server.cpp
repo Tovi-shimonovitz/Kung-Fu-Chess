@@ -1,9 +1,10 @@
-#include "../../include/network/game_server.h"
-#include "../../include/network/message_codec.h"
+#include "../../../include/network/core/game_server.h"
+#include "../../../include/network/protocol/message_codec.h"
+#include "../../../include/network/core/message_router.h"
 #include <iostream>
 
-GameServer::GameServer(ConnectionsRegistry& registry, MessageRouter& router)
-    : registry_(registry), router_(router) {
+GameServer::GameServer(ConnectionsRegistry& registry)
+    : registry_(registry) {
     server_.clear_access_channels(websocketpp::log::alevel::all);
     server_.init_asio();
 
@@ -14,6 +15,10 @@ GameServer::GameServer(ConnectionsRegistry& registry, MessageRouter& router)
     });
 }
 
+void GameServer::setRouter(MessageRouter& router) {
+    router_ = &router;
+}
+
 void GameServer::run(std::uint16_t port) {
     server_.listen(port);
     server_.start_accept();
@@ -22,13 +27,15 @@ void GameServer::run(std::uint16_t port) {
 }
 
 void GameServer::send(ConnectionId id, const std::string& text) {
-    auto it = idToHandle_.find(id);
-    if (it == idToHandle_.end()) return;
-    try {
-        server_.send(it->second, text, websocketpp::frame::opcode::text);
-    } catch (const std::exception& e) {
-        std::cout << "[GameServer] failed to send to connection " << id << ": " << e.what() << std::endl;
-    }
+    server_.get_io_service().post([this, id, text]() {
+        auto it = idToHandle_.find(id);
+        if (it == idToHandle_.end()) return;
+        try {
+            server_.send(it->second, text, websocketpp::frame::opcode::text);
+        } catch (const std::exception& e) {
+            std::cout << "[GameServer] failed to send to connection " << id << ": " << e.what() << std::endl;
+        }
+    });
 }
 
 void GameServer::onOpen(ConnectionHandle handle) {
@@ -56,7 +63,7 @@ void GameServer::onMessage(ConnectionHandle handle, WsServer::message_ptr msg) {
 
     try {
         RawMessage raw = MessageCodec::parseRaw(msg->get_payload());
-        auto error = router_.route(id, raw);
+        auto error = router_->route(id, raw);
         if (error) send(id, *error);
     } catch (const std::exception& e) {
         send(id, std::string("ERROR: ") + e.what());
