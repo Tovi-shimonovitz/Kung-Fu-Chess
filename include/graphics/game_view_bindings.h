@@ -1,7 +1,8 @@
 #pragma once
-class GameEngine;
+class Canvas;
 class BoardRenderer;
 class RenderableElement;
+class ManageElement;
 
-void bindBoardElement(GameEngine& engine, BoardRenderer& renderer, RenderableElement& boardElement);
+void bindBoardElement(Canvas& canvas, BoardRenderer& renderer, RenderableElement& boardElement, ManageElement& layout);
 // בעתיד: void bindMoveTableElement(...);

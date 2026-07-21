@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
 #include "engine/GameEngine.h"
 #include "graphics/board/board_frame_manager.h"
 #include "graphics/board/board_renderer.h"
@@ -14,6 +15,10 @@
 #include "io/BoardParser.h"
 #include "io/env_config.h"
 #include "model/Board.h"
+
+namespace {
+constexpr int TARGET_FRAME_MS = 16; // ~60 FPS
+}
 
 int main() {
     try {
@@ -33,27 +38,33 @@ int main() {
 
         Canvas canvas(env.getInt("CANVAS_WIDTH"), env.getInt("CANVAS_HEIGHT"), env.getInt("CANVAS_CHANNELS"));
         RenderableElement boardElement;
-        canvas.registerElement(boardElement, boardLayout);
-        bindBoardElement(engine, boardRenderer, boardElement);   
+        bindBoardElement(canvas, boardRenderer, boardElement, boardLayout);
 
         Controller controller(engine, boardMapper);
-        GraphicsRunner graphicsRunner(engine, canvas, controller, "KungFuChess");
+        GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
 
-        auto lastTime = std::chrono::steady_clock::now();
+        auto previousTime = std::chrono::steady_clock::now();
         while (!graphicsRunner.shouldQuit()) {
-            auto now = std::chrono::steady_clock::now();
+            auto frameStart = std::chrono::steady_clock::now();
             int elapsedMs = static_cast<int>(
-                std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count());
-            lastTime = now;
+                std::chrono::duration_cast<std::chrono::milliseconds>(frameStart - previousTime).count());
+            previousTime = frameStart;
 
             if (elapsedMs <= 0) {
                 elapsedMs = 1;
             }
 
             engine.wait(elapsedMs);
+            canvas.refreshAll(engine.getSnapshot(), elapsedMs);
+            graphicsRunner.render();
+
+            auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - frameStart).count();
+            if (frameDuration < TARGET_FRAME_MS) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(TARGET_FRAME_MS - frameDuration));
+            }
         }
 
-       
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;

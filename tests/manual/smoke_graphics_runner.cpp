@@ -37,11 +37,10 @@ int main() {
 
     Canvas canvas(800, 800, 4);
     RenderableElement boardElement;
-    canvas.registerElement(boardElement, frameManager);
-    bindBoardElement(engine, renderer, boardElement);
+    bindBoardElement(canvas, renderer, boardElement, frameManager);
 
     Controller controller(engine, boardMapper);
-    GraphicsRunner graphicsRunner(engine, canvas, controller, "KungFuChess");
+    GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
 
     // click the white queen at (0,3), then click destination (3,3): straight move down the column
     controller.handleInput(pixelForCell(3), pixelForCell(0));
@@ -53,18 +52,20 @@ int main() {
 
     std::cout << "Window open - press ESC or 'q' inside it to quit." << std::endl;
 
-    auto lastTime = std::chrono::steady_clock::now();
+    auto previousTime = std::chrono::steady_clock::now();
     while (!graphicsRunner.shouldQuit()) {
         auto now = std::chrono::steady_clock::now();
         int elapsedMs = static_cast<int>(
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count());
-        lastTime = now;
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - previousTime).count());
+        previousTime = now;
 
         if (elapsedMs <= 0) {
             elapsedMs = 1;
         }
 
         engine.wait(elapsedMs);
+        canvas.refreshAll(engine.getSnapshot(), elapsedMs);
+        graphicsRunner.render();
     }
 
     std::cout << "Window closed." << std::endl;

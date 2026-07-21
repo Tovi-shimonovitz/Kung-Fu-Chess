@@ -3,8 +3,14 @@
 Canvas::Canvas(int windowWidth, int windowHeight, int channels)
     : buffer(Img::blank(windowWidth, windowHeight, channels)) {}
 
-void Canvas::registerElement(RenderableElement& element, ManageElement& layout) {
-    slots.push_back({element, layout});
+void Canvas::registerElement(RenderableElement& element, ManageElement& layout, ContentProvider provider) {
+    slots.push_back({element, layout, std::move(provider)});
+}
+
+void Canvas::refreshAll(const GameSnapshot& snapshot, int elapsedMs) {
+    for (auto& slot : slots) {
+        slot.element.updateContent(slot.provider(snapshot, elapsedMs));
+    }
 }
 
 const cv::Mat& Canvas::composeAll(int windowWidth, int windowHeight) {

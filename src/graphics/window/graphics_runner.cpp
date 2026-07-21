@@ -1,19 +1,13 @@
 #include "../../../include/graphics/window/graphics_runner.h"
-#include "../../../include/engine/GameEngine.h"
 #include "../../../include/graphics/window/canvas.h"
 #include "../../../include/input/controller.h"
 #include <opencv2/opencv.hpp>
 
-GraphicsRunner::GraphicsRunner(GameEngine& engine, Canvas& canvas, Controller& controller, std::string windowName)
-    : engine(engine), canvas(canvas), controller(controller),
+GraphicsRunner::GraphicsRunner(Canvas& canvas, Controller& controller, std::string windowName)
+    : canvas(canvas), controller(controller),
       windowName(std::move(windowName)), quitRequested(false) {
     cv::namedWindow(this->windowName, cv::WINDOW_NORMAL | cv::WINDOW_FREERATIO);
     cv::setMouseCallback(this->windowName, &GraphicsRunner::mouseTrampoline, this);
-    waitObserverId = engine.addWaitObserver([this](int elapsedMs) { onWait(elapsedMs); });
-}
-
-GraphicsRunner::~GraphicsRunner() {
-    engine.removeWaitObserver(waitObserverId);
 }
 
 void GraphicsRunner::mouseTrampoline(int event, int x, int y, int flags, void* userdata) {
@@ -26,7 +20,7 @@ void GraphicsRunner::onMouse(int event, int x, int y) {
     }
 }
 
-void GraphicsRunner::onWait(int elapsedMs) {
+void GraphicsRunner::render() {
     cv::Rect windowRect = cv::getWindowImageRect(windowName);
     if (windowRect.width > 0 && windowRect.height > 0) {
         const cv::Mat& composed = canvas.composeAll(windowRect.width, windowRect.height);

@@ -1,11 +1,9 @@
 #include "graphics/game_view_bindings.h"
-#include "engine/GameEngine.h"
 #include "graphics/board/board_renderer.h"
-#include "graphics/window/renderable_element.h"
+#include "graphics/window/canvas.h"
 
-void bindBoardElement(GameEngine& engine, BoardRenderer& renderer, RenderableElement& boardElement) {
-    engine.addWaitObserver([&engine, &renderer, &boardElement](int elapsedMs) {
-        Img raw = renderer.render(engine.getSnapshot(), elapsedMs);
-        boardElement.updateContent(std::move(raw));
+void bindBoardElement(Canvas& canvas, BoardRenderer& renderer, RenderableElement& boardElement, ManageElement& layout) {
+    canvas.registerElement(boardElement, layout, [&renderer](const GameSnapshot& snapshot, int elapsedMs) {
+        return renderer.render(snapshot, elapsedMs);
     });
 }
