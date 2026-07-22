@@ -60,7 +60,7 @@ void MessageRouter::handleMoveRequest(ConnectionId connectionId, const RawMessag
     auto info = registry_.get(connectionId);
     if (!info || !info->gameId) return;
 
-    RoomWorker* room = games_.find(*info->gameId);
+    auto room = games_.find(*info->gameId);
     if (!room) return;
 
     room->postMoveRequest(connectionId, message.from, message.to);

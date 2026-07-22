@@ -1,15 +1,16 @@
 #include "../../../include/network/registry/games_registry.h"
 #include "../../../include/network/core/game_server.h"
 
-RoomWorker& GamesRegistry::activate(std::unique_ptr<GameRoom> room, GameServer& server) {
+GamesRegistry::GamesRegistry(std::size_t threadCount) : pool_(threadCount) {}
+
+std::shared_ptr<RoomWorker> GamesRegistry::activate(std::unique_ptr<GameRoom> room, GameServer& server) {
     GameId id = room->id();
-    auto worker = std::make_unique<RoomWorker>(std::move(room), server);
-    RoomWorker& ref = *worker;
-    workers_[id] = std::move(worker);
-    return ref;
+    auto worker = RoomWorker::create(pool_.ioContext(), std::move(room), server);
+    workers_[id] = worker;
+    return worker;
 }
 
-RoomWorker* GamesRegistry::find(GameId id) {
+std::shared_ptr<RoomWorker> GamesRegistry::find(GameId id) {
     auto it = workers_.find(id);
-    return it != workers_.end() ? it->second.get() : nullptr;
+    return it != workers_.end() ? it->second : nullptr;
 }
