@@ -62,9 +62,10 @@ endif()
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp")
+list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/client_main.cpp")
 
 add_library(ChessLogic STATIC ${SOURCES})
-target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio)
+target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio user32)
 
 add_executable(ChessGame src/main.cpp)
 target_link_libraries(ChessGame PRIVATE ChessLogic)
@@ -73,6 +74,11 @@ add_custom_command(TARGET ChessGame POST_BUILD
 
 add_executable(ChessServer src/server_main.cpp)
 target_link_libraries(ChessServer PRIVATE ChessLogic)
+
+add_executable(ChessClient src/client_main.cpp)
+target_link_libraries(ChessClient PRIVATE ChessLogic)
+add_custom_command(TARGET ChessClient POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:ChessClient>")
 
 # temporary manual visual smoke check - not part of the automated test suite
 add_executable(smoke_board_renderer tests/manual/smoke_board_renderer.cpp)
