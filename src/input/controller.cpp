@@ -12,17 +12,16 @@ bool hasPieceAt(const GameSnapshot& snapshot, Position pos) {
 }
 }
 
-Controller::Controller(BoardMapper& boardMapper, MoveRequestHandler onMoveRequested)
-    : m_boardMapper(boardMapper), m_onMoveRequested(std::move(onMoveRequested)), m_selectedPosition(std::nullopt) {}
+Controller::Controller(MoveRequestHandler onMoveRequested)
+    : m_onMoveRequested(std::move(onMoveRequested)), m_selectedPosition(std::nullopt) {}
 
 void Controller::updateSnapshot(const GameSnapshot& snapshot) {
     m_lastSnapshot = snapshot;
 }
 
-void Controller::handleInput(int x, int y) {
+void Controller::handleInput(Position targetPos) {
     if (!m_lastSnapshot) return; // no game state received yet
 
-    auto targetPos = m_boardMapper.pixelWindowToCell(x, y);
     bool isInsideBoard = targetPos.row >= 0 && targetPos.row < m_lastSnapshot->height &&
                          targetPos.col >= 0 && targetPos.col < m_lastSnapshot->width;
 

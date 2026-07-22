@@ -3,10 +3,11 @@
 
 class Canvas;
 class Controller;
+class BoardMapper;
 
 class GraphicsRunner {
 public:
-    GraphicsRunner(Canvas& canvas, Controller& controller, std::string windowName);
+    GraphicsRunner(Canvas& canvas, Controller& controller, BoardMapper& boardMapper, std::string windowName);
 
     bool shouldQuit() const { return quitRequested; }
     void render();
@@ -17,6 +18,7 @@ private:
 
     Canvas& canvas;
     Controller& controller;
+    BoardMapper& boardMapper;
     std::string windowName;
     bool quitRequested;
 };

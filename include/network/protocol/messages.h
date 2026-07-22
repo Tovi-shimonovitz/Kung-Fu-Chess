@@ -22,8 +22,10 @@ public:
 
 struct RegisterMessage : public ClientMessage {
     std::string username;
+    std::string password;
 
-    explicit RegisterMessage(std::string username) : username(std::move(username)) {}
+    RegisterMessage(std::string username, std::string password)
+        : username(std::move(username)), password(std::move(password)) {}
     RawMessage toRaw() const override;
 };
 

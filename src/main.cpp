@@ -47,10 +47,10 @@ int main() {
         RenderableElement boardElement;
         bindBoardElement(canvas, boardRenderer, boardElement, boardLayout);
 
-        Controller controller(boardMapper, [&engine](Position src, Position dst) {
+        Controller controller([&engine](Position src, Position dst) {
             engine.requestMove(src, dst);
         });
-        GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
+        GraphicsRunner graphicsRunner(canvas, controller, boardMapper, "KungFuChess");
 
         auto previousTime = std::chrono::steady_clock::now();
         while (!graphicsRunner.shouldQuit()) {

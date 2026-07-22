@@ -10,7 +10,6 @@
 #include "graphics/window/canvas.h"
 #include "graphics/window/graphics_runner.h"
 #include "graphics/window/renderable_element.h"
-#include "graphics/window/win32_prompt_dialog.h"
 #include "graphics/game_view_bindings.h"
 #include "graphics/sprites/sprite_repository.h"
 #include "input/board_mapper.h"
@@ -19,13 +18,12 @@
 #include "network/client/network_client.h"
 #include "network/protocol/messages.h"
 
-int main() {
+// Same as client_main.cpp, minus the interactive Win32 login dialog
+// (hardcoded username instead), so this can be driven non-interactively
+// to reproduce the crash.
+int main(int argc, char** argv) {
     try {
-        SetProcessDPIAware();
-
-        PromptResult login = Win32PromptDialog("Kung-Fu Chess - Login", {"Username", "Password"}, {"OK"}).show();
-        std::string username = login.values[0];
-        std::string password = login.values[1];
+        std::string username = argc > 1 ? argv[1] : "diag";
 
         EnvConfig env = EnvConfig::load(".env");
         int targetFrameMs = env.getInt("TARGET_FRAME_MS");
@@ -41,7 +39,7 @@ int main() {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
 
-        networkClient.send(RegisterMessage(username, password));
+        networkClient.send(RegisterMessage(username, "pw"));
         networkClient.send(PlayRequestMessage());
         std::cout << "Waiting for an opponent..." << std::endl;
 
@@ -53,16 +51,21 @@ int main() {
         Canvas canvas(env.getInt("CANVAS_WIDTH"), env.getInt("CANVAS_HEIGHT"), env.getInt("CANVAS_CHANNELS"));
         RenderableElement boardElement;
         bindBoardElement(canvas, boardRenderer, boardElement, boardLayout);
+        std::cout << "Canvas/BoardRenderer wired up." << std::endl;
 
         Controller controller([&networkClient](Position src, Position dst) {
             networkClient.send(MoveRequestMessage(src, dst));
         });
+        std::cout << "Creating GraphicsRunner (opens window)..." << std::endl;
         GraphicsRunner graphicsRunner(canvas, controller, boardMapper, "KungFuChess - " + username);
+        std::cout << "GraphicsRunner created." << std::endl;
 
         GameSnapshot emptyBoardSnapshot{cellsWide, cellsHigh, {}, false};
+        bool sawFirstRealSnapshot = false;
 
+        int frameCount = 0;
         auto previousTime = std::chrono::steady_clock::now();
-        while (!graphicsRunner.shouldQuit()) {
+        while (!graphicsRunner.shouldQuit() && frameCount < 100) {
             auto frameStart = std::chrono::steady_clock::now();
             int elapsedMs = static_cast<int>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(frameStart - previousTime).count());
@@ -70,10 +73,16 @@ int main() {
 
             networkClient.poll();
 
-            GameSnapshot snapshot = networkClient.latestSnapshot().value_or(emptyBoardSnapshot);
+            auto realSnapshot = networkClient.latestSnapshot();
+            if (realSnapshot && !sawFirstRealSnapshot) {
+                std::cout << "First real snapshot arrived, rendering..." << std::endl;
+                sawFirstRealSnapshot = true;
+            }
+            GameSnapshot snapshot = realSnapshot.value_or(emptyBoardSnapshot);
             canvas.refreshAll(snapshot, elapsedMs);
             controller.updateSnapshot(snapshot);
             graphicsRunner.render();
+            ++frameCount;
 
             auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - frameStart).count();
@@ -81,9 +90,10 @@ int main() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(targetFrameMs - frameDuration));
             }
         }
+        std::cout << "Loop finished after " << frameCount << " frames without crashing." << std::endl;
 
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "CRASHED: " << e.what() << std::endl;
         return 1;
     }
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(KungFuChess CXX)
+project(KungFuChess CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -59,13 +59,20 @@ if(WIN32)
     target_link_libraries(websocketpp_asio INTERFACE ws2_32 wsock32)
 endif()
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+# SQLite amalgamation - vendored directly under third_party (like OpenCV), since CMake's
+# own downloader couldn't complete a TLS revocation check on this network even though a
+# plain curl request to the same URL succeeded fine.
+set(SQLITE3_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3")
+add_library(sqlite3lib STATIC "${SQLITE3_ROOT}/sqlite3.c")
+target_include_directories(sqlite3lib PUBLIC "${SQLITE3_ROOT}")
+
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/client_main.cpp")
 
 add_library(ChessLogic STATIC ${SOURCES})
-target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio user32)
+target_link_libraries(ChessLogic PUBLIC ${OPENCV_LIB_NAME} nlohmann_json::nlohmann_json websocketpp_asio user32 sqlite3lib)
 
 add_executable(ChessGame src/main.cpp)
 target_link_libraries(ChessGame PRIVATE ChessLogic)
@@ -106,6 +113,16 @@ target_link_libraries(smoke_two_players PRIVATE ChessLogic)
 add_custom_command(TARGET smoke_two_players POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_two_players>")
 
+add_executable(smoke_client_render tests/manual/smoke_client_render.cpp)
+target_link_libraries(smoke_client_render PRIVATE ChessLogic)
+add_custom_command(TARGET smoke_client_render POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_client_render>")
+
+add_executable(smoke_client_main_flow tests/manual/smoke_client_main_flow.cpp)
+target_link_libraries(smoke_client_main_flow PRIVATE ChessLogic)
+add_custom_command(TARGET smoke_client_main_flow POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENCV_DLL}" "$<TARGET_FILE_DIR:smoke_client_main_flow>")
+
 enable_testing()
 
 set(UNIT_TESTS
@@ -131,6 +148,9 @@ set(UNIT_TESTS
     test_message_codec
     test_connections_registry
     test_message_router
+    test_server_message_codec
+    test_db
+    test_game_worker_pool
 )
 
 foreach(test_name ${UNIT_TESTS})

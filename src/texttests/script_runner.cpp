@@ -5,8 +5,8 @@
 #include <utility>
 #include "../../include/texttests/script_data.h"
 
-ScriptRunner::ScriptRunner(GameEngine& engine, Controller& controller, BoardPrinter& printer)
-    : m_engine(engine), m_controller(controller), m_printer(printer) {
+ScriptRunner::ScriptRunner(GameEngine& engine, Controller& controller, BoardMapper& boardMapper, BoardPrinter& printer)
+    : m_engine(engine), m_controller(controller), m_boardMapper(boardMapper), m_printer(printer) {
     m_commandMap = {
         {"click", [this](const std::vector<std::string>& args) { handleClick(args); }},
         {"wait", [this](const std::vector<std::string>& args) { handleWait(args); }},
@@ -28,7 +28,7 @@ void ScriptRunner::run(const std::vector<Command>& commands) {
 void ScriptRunner::handleClick(const std::vector<std::string>& args) {
     int x = std::stoi(args[0]);
     int y = std::stoi(args[1]);
-    m_controller.handleInput(x, y);
+    m_controller.handleInput(m_boardMapper.pixelWindowToCell(x, y));
 }
 
 void ScriptRunner::handleWait(const std::vector<std::string>& args) {

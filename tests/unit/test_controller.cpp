@@ -11,12 +11,8 @@ void log_test(const std::string& name) {
     std::cout << "[PASSED] " << name << std::endl;
 }
 
-int pixelFor(int cell) {
-    return cell * CELL_SIZE + CELL_SIZE / 2;
-}
-
-Controller makeController(BoardMapper& boardMapper, GameEngine& engine) {
-    return Controller(boardMapper, [&engine](Position src, Position dst) {
+Controller makeController(GameEngine& engine) {
+    return Controller([&engine](Position src, Position dst) {
         engine.requestMove(src, dst);
     });
 }
@@ -26,12 +22,11 @@ void test_click_selects_piece_then_moves_to_destination() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({1, 2}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {1, 2}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(2), pixelFor(1)); // select (1,2)
-    controller.handleInput(pixelFor(5), pixelFor(1)); // request move to (1,5)
+    controller.handleInput(Position(1, 2)); // select (1,2)
+    controller.handleInput(Position(1, 5)); // request move to (1,5)
 
     engine.wait(3000); // 3 squares of travel time
 
@@ -45,16 +40,15 @@ void test_click_on_empty_square_selects_nothing() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({4, 4}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {4, 4}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(0), pixelFor(0)); // empty square: no selection made (hasPieceAt fails)
+    controller.handleInput(Position(0, 0)); // empty square: no selection made (hasPieceAt fails)
 
     // A subsequent click on an actual piece should now select it fresh
     // (proving the earlier click on empty space left no stale selection).
-    controller.handleInput(pixelFor(4), pixelFor(4));
-    controller.handleInput(pixelFor(4), pixelFor(6));
+    controller.handleInput(Position(4, 4));
+    controller.handleInput(Position(6, 4));
 
     engine.wait(2000);
 
@@ -69,16 +63,15 @@ void test_click_outside_board_deselects_current_piece() {
     board->addPiece({2, 2}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {2, 2}));
     board->addPiece({5, 5}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::BISHOP, {5, 5}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(2), pixelFor(2));  // select rook at (2,2)
-    controller.handleInput(-100, -100);                // click outside the board: deselect
+    controller.handleInput(Position(2, 2));  // select rook at (2,2)
+    controller.handleInput(Position(-1, -1)); // click outside the board: deselect
 
     // This click should now select the bishop fresh, not move the rook.
-    controller.handleInput(pixelFor(5), pixelFor(5));
-    controller.handleInput(pixelFor(7), pixelFor(7));
+    controller.handleInput(Position(5, 5));
+    controller.handleInput(Position(7, 7));
 
     engine.wait(2000);
 
@@ -93,12 +86,11 @@ void test_illegal_destination_does_not_move_piece() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({0, 0}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::ROOK, {0, 0}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(0), pixelFor(0)); // select rook
-    controller.handleInput(pixelFor(5), pixelFor(5)); // diagonal: illegal for a rook
+    controller.handleInput(Position(0, 0)); // select rook
+    controller.handleInput(Position(5, 5)); // diagonal: illegal for a rook
 
     engine.wait(1000);
 
@@ -112,12 +104,11 @@ void test_click_moves_queen_diagonally() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::QUEEN, {3, 3}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(3), pixelFor(3)); // select queen at (3,3)
-    controller.handleInput(pixelFor(6), pixelFor(6)); // diagonal move to (6,6)
+    controller.handleInput(Position(3, 3)); // select queen at (3,3)
+    controller.handleInput(Position(6, 6)); // diagonal move to (6,6)
 
     engine.wait(3000); // 3 squares of travel time
 
@@ -131,12 +122,11 @@ void test_click_moves_knight_in_l_shape() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({4, 4}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KNIGHT, {4, 4}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(4), pixelFor(4)); // select knight at (4,4)
-    controller.handleInput(pixelFor(5), pixelFor(6)); // L-shaped move to (6,5)
+    controller.handleInput(Position(4, 4)); // select knight at (4,4)
+    controller.handleInput(Position(6, 5)); // L-shaped move to (6,5)
 
     engine.wait(2000); // 2 squares of travel time
 
@@ -150,12 +140,11 @@ void test_click_moves_king_one_square() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({3, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KING, {3, 3}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(3), pixelFor(3)); // select king at (3,3)
-    controller.handleInput(pixelFor(4), pixelFor(4)); // one square diagonally to (4,4)
+    controller.handleInput(Position(3, 3)); // select king at (3,3)
+    controller.handleInput(Position(4, 4)); // one square diagonally to (4,4)
 
     engine.wait(1000);
 
@@ -169,12 +158,11 @@ void test_click_moves_pawn_forward() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({6, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::PAWN, {6, 3}));
     engine.setBoard(std::move(board));
-    BoardMapper boardMapper;
-    Controller controller = makeController(boardMapper, engine);
+    Controller controller = makeController(engine);
 
     controller.updateSnapshot(engine.getSnapshot());
-    controller.handleInput(pixelFor(3), pixelFor(6)); // select pawn at (6,3)
-    controller.handleInput(pixelFor(3), pixelFor(4)); // double-step forward to (4,3)
+    controller.handleInput(Position(6, 3)); // select pawn at (6,3)
+    controller.handleInput(Position(4, 3)); // double-step forward to (4,3)
 
     engine.wait(2000); // 2 squares of travel time
 

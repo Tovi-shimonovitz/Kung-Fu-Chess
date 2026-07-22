@@ -7,12 +7,13 @@ void log_test(const std::string& name) {
 }
 
 void test_register_message_round_trip() {
-    RegisterMessage original{"alice"};
+    RegisterMessage original{"alice", "s3cret"};
     RawMessage raw = MessageCodec::toRaw(original);
     assert(raw.type == MessageType::Register);
 
     RegisterMessage parsed = MessageCodec::parseRegister(raw);
     assert(parsed.username == "alice");
+    assert(parsed.password == "s3cret");
     log_test("test_register_message_round_trip");
 }
 

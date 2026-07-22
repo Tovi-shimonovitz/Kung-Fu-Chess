@@ -6,6 +6,8 @@
 #include "../include/network/registry/games_registry.h"
 #include "../include/network/core/matchmaker.h"
 #include "../include/network/core/message_router.h"
+#include "../include/db/user_repository.h"
+#include "../include/network/core/auth_handler.h"
 
 int main() {
     const std::uint16_t port = 9002;
@@ -16,7 +18,9 @@ int main() {
     GamesRegistry games;
     GameServer server(registry);
     Matchmaker matchmaker(registry, games, server, env.get("BOARD_CSV_PATH"));
-    MessageRouter router(registry, matchmaker, games);
+    UserRepository userRepository(env.get("DB_PATH"));
+    AuthHandler authHandler(userRepository);
+    MessageRouter router(registry, matchmaker, games, authHandler);
     server.setRouter(router);
 
     std::cout << "Kung-Fu Chess server starting..." << std::endl;

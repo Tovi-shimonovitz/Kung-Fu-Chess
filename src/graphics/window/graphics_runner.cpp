@@ -1,10 +1,11 @@
 #include "../../../include/graphics/window/graphics_runner.h"
 #include "../../../include/graphics/window/canvas.h"
 #include "../../../include/input/controller.h"
+#include "../../../include/input/board_mapper.h"
 #include <opencv2/opencv.hpp>
 
-GraphicsRunner::GraphicsRunner(Canvas& canvas, Controller& controller, std::string windowName)
-    : canvas(canvas), controller(controller),
+GraphicsRunner::GraphicsRunner(Canvas& canvas, Controller& controller, BoardMapper& boardMapper, std::string windowName)
+    : canvas(canvas), controller(controller), boardMapper(boardMapper),
       windowName(std::move(windowName)), quitRequested(false) {
     cv::namedWindow(this->windowName, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO);
     cv::setMouseCallback(this->windowName, &GraphicsRunner::mouseTrampoline, this);
@@ -16,7 +17,7 @@ void GraphicsRunner::mouseTrampoline(int event, int x, int y, int flags, void* u
 
 void GraphicsRunner::onMouse(int event, int x, int y) {
     if (event == cv::EVENT_LBUTTONDOWN) {
-        controller.handleInput(x, y);
+        controller.handleInput(boardMapper.pixelWindowToCell(x, y));
     }
 }
 

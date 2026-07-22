@@ -14,12 +14,6 @@
 #include "../../include/model/Board.h"
 #include "../../include/model/PieceFactory.h"
 
-namespace {
-int pixelForCell(int cell) {
-    return cell * CELL_SIZE + CELL_SIZE / 2;
-}
-}
-
 int main() {
     auto board = std::make_unique<Board>(8, 8);
     board->addPiece({0, 4}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::KING, {0, 4}));
@@ -39,20 +33,20 @@ int main() {
     RenderableElement boardElement;
     bindBoardElement(canvas, renderer, boardElement, frameManager);
 
-    Controller controller(boardMapper, [&engine](Position src, Position dst) {
+    Controller controller([&engine](Position src, Position dst) {
         engine.requestMove(src, dst);
     });
-    GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
+    GraphicsRunner graphicsRunner(canvas, controller, boardMapper, "KungFuChess");
 
     controller.updateSnapshot(engine.getSnapshot());
 
     // click the white queen at (0,3), then click destination (3,3): straight move down the column
-    controller.handleInput(pixelForCell(3), pixelForCell(0));
-    controller.handleInput(pixelForCell(3), pixelForCell(3));
+    controller.handleInput(Position(0, 3));
+    controller.handleInput(Position(3, 3));
 
     // click the black knight at (7,1), then click destination (5,2): an L-shaped knight move
-    controller.handleInput(pixelForCell(1), pixelForCell(7));
-    controller.handleInput(pixelForCell(2), pixelForCell(5));
+    controller.handleInput(Position(7, 1));
+    controller.handleInput(Position(5, 2));
 
     std::cout << "Window open - press ESC or 'q' inside it to quit." << std::endl;
 

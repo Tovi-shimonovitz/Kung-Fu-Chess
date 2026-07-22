@@ -39,13 +39,16 @@ std::string MessageCodec::serializeRaw(const RawMessage& message) {
 }
 
 RegisterMessage MessageCodec::parseRegister(const RawMessage& raw) {
-    return RegisterMessage(raw.payload.at("username").get<std::string>());
+    return RegisterMessage(
+        raw.payload.at("username").get<std::string>(),
+        raw.payload.at("password").get<std::string>());
 }
 
 RawMessage MessageCodec::toRaw(const RegisterMessage& message) {
     RawMessage raw;
     raw.type = MessageType::Register;
     raw.payload["username"] = message.username;
+    raw.payload["password"] = message.password;
     return raw;
 }
 

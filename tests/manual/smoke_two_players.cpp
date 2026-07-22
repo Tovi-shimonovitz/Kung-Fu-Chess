@@ -70,8 +70,8 @@ int main() {
     b.connect("ws://localhost:9002");
     pump(a, b, 20);
 
-    a.send(MessageCodec::serializeRaw(MessageCodec::toRaw(RegisterMessage{"alice"})));
-    b.send(MessageCodec::serializeRaw(MessageCodec::toRaw(RegisterMessage{"bob"})));
+    a.send(MessageCodec::serializeRaw(MessageCodec::toRaw(RegisterMessage{"alice", "pw"})));
+    b.send(MessageCodec::serializeRaw(MessageCodec::toRaw(RegisterMessage{"bob", "pw"})));
     pump(a, b, 5);
 
     std::cout << "--- sending PlayRequest for both ---" << std::endl;

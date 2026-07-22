@@ -1,12 +1,13 @@
 #include "../../../include/network/core/message_router.h"
 #include "../../../include/network/protocol/message_codec.h"
 #include "../../../include/network/core/matchmaker.h"
+#include "../../../include/network/core/auth_handler.h"
 #include "../../../include/network/registry/games_registry.h"
 #include "../../../include/network/room/room_worker.h"
 #include <iostream>
 
-MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games)
-    : registry_(registry), matchmaker_(matchmaker), games_(games) {}
+MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games, AuthHandler& authHandler)
+    : registry_(registry), matchmaker_(matchmaker), games_(games), authHandler_(authHandler) {}
 
 bool MessageRouter::isAllowed(ConnectionStatus status, MessageType type) const {
     switch (status) {
@@ -26,19 +27,26 @@ std::optional<std::string> MessageRouter::route(ConnectionId connectionId, const
     }
 
     switch (raw.type) {
-        case MessageType::Register: handleRegister(connectionId, raw); break;
+        case MessageType::Register: return handleRegister(connectionId, raw);
         case MessageType::PlayRequest: handlePlayRequest(connectionId, raw); break;
         case MessageType::MoveRequest: handleMoveRequest(connectionId, raw); break;
     }
     return std::nullopt;
 }
 
-void MessageRouter::handleRegister(ConnectionId connectionId, const RawMessage& raw) {
+std::optional<std::string> MessageRouter::handleRegister(ConnectionId connectionId, const RawMessage& raw) {
     RegisterMessage message = MessageCodec::parseRegister(raw);
+
+    auto error = authHandler_.authenticate(message.username, message.password);
+    if (error) {
+        return error;
+    }
+
     registry_.setUsername(connectionId, message.username);
     registry_.setStatus(connectionId, ConnectionStatus::Registered);
     std::cout << "[Router] " << message.username << " registered (connection "
               << connectionId << ")" << std::endl;
+    return std::nullopt;
 }
 
 void MessageRouter::handlePlayRequest(ConnectionId connectionId, const RawMessage& raw) {
