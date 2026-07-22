@@ -28,6 +28,15 @@ bool Board::removePiece(const Position& pos) {
     return false;
 }
 
+Piece* Board::replacePiece(const Position& pos, std::unique_ptr<Piece> piece) {
+    if (!isInsideBounds(pos)) {
+        return nullptr;
+    }
+    Piece* raw = piece.get();
+    pieces[pos] = std::move(piece);
+    return raw;
+}
+
 Piece* Board::getPieceAt(const Position& pos) const {
     auto it = pieces.find(pos);
     return (it != pieces.end()) ? it->second.get() : nullptr;

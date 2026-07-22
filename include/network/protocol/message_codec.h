@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "raw_message.h"
+#include "messages.h"
 
 class MessageCodec {
 public:

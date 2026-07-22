@@ -4,11 +4,17 @@
 #include <algorithm>
 #include "../../include/realtime/motion.h"
 #include "../../include/model/Board.h"
+#include "../../include/model/PieceFactory.h"
 #include "../../include/engine/Result_structs.h"
 #include "../../include/realtime/real_time_arbiter.h"
 #include "../../include/realtime/standard_collision_resolver.h"
 
-
+namespace {
+bool isPromotionRank(const Position& pos, PieceColor color) {
+    return (color == PieceColor::WHITE && pos.row == 0) ||
+           (color == PieceColor::BLACK && pos.row == 7);
+}
+}
 
 RealTimeArbiter::RealTimeArbiter(std::unique_ptr<CollisionResolver> resolver)
     : collisionResolver(resolver ? std::move(resolver) : std::make_unique<StandardCollisionResolver>())
@@ -177,8 +183,15 @@ void RealTimeArbiter::performArrival(const Motion& m, Board& board, WaitResult& 
     }
     
     board.movePiece(m.source, m.target);
-    m.piece->state = PieceState:: COOLDOWN;
-    cooldowns.push_back({ m.piece, m.totalDurationMs() });
+
+    Piece* arrived = m.piece;
+    if (arrived->kind == PieceKind::PAWN && isPromotionRank(m.target, arrived->color)) {
+        arrived = board.replacePiece(m.target,
+            PieceFactory::createPiece(arrived->color, PieceKind::QUEEN, m.target));
+    }
+
+    arrived->state = PieceState::COOLDOWN;
+    cooldowns.push_back({ arrived, m.totalDurationMs() });
 
     if (isKingEaten) {
         result.message = "king_eaten";

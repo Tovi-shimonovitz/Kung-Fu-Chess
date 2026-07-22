@@ -39,9 +39,7 @@ std::string MessageCodec::serializeRaw(const RawMessage& message) {
 }
 
 RegisterMessage MessageCodec::parseRegister(const RawMessage& raw) {
-    RegisterMessage message;
-    message.username = raw.payload.at("username").get<std::string>();
-    return message;
+    return RegisterMessage(raw.payload.at("username").get<std::string>());
 }
 
 RawMessage MessageCodec::toRaw(const RegisterMessage& message) {
@@ -65,12 +63,11 @@ RawMessage MessageCodec::toRaw(const PlayRequestMessage& message) {
 }
 
 MoveRequestMessage MessageCodec::parseMoveRequest(const RawMessage& raw) {
-    MoveRequestMessage message;
-    message.from = Position(raw.payload.at("from").at("row").get<int>(),
-                             raw.payload.at("from").at("col").get<int>());
-    message.to = Position(raw.payload.at("to").at("row").get<int>(),
-                           raw.payload.at("to").at("col").get<int>());
-    return message;
+    Position from(raw.payload.at("from").at("row").get<int>(),
+                  raw.payload.at("from").at("col").get<int>());
+    Position to(raw.payload.at("to").at("row").get<int>(),
+                raw.payload.at("to").at("col").get<int>());
+    return MoveRequestMessage(from, to);
 }
 
 RawMessage MessageCodec::toRaw(const MoveRequestMessage& message) {
@@ -80,3 +77,7 @@ RawMessage MessageCodec::toRaw(const MoveRequestMessage& message) {
     raw.payload["to"] = { {"row", message.to.row}, {"col", message.to.col} };
     return raw;
 }
+
+RawMessage RegisterMessage::toRaw() const { return MessageCodec::toRaw(*this); }
+RawMessage PlayRequestMessage::toRaw() const { return MessageCodec::toRaw(*this); }
+RawMessage MoveRequestMessage::toRaw() const { return MessageCodec::toRaw(*this); }

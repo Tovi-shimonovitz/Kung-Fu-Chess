@@ -47,7 +47,9 @@ int main() {
         RenderableElement boardElement;
         bindBoardElement(canvas, boardRenderer, boardElement, boardLayout);
 
-        Controller controller(engine, boardMapper);
+        Controller controller(boardMapper, [&engine](Position src, Position dst) {
+            engine.requestMove(src, dst);
+        });
         GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
 
         auto previousTime = std::chrono::steady_clock::now();
@@ -58,7 +60,9 @@ int main() {
             previousTime = frameStart;
 
             engine.wait(elapsedMs);
-            canvas.refreshAll(engine.getSnapshot(), elapsedMs);
+            GameSnapshot snapshot = engine.getSnapshot();
+            canvas.refreshAll(snapshot, elapsedMs);
+            controller.updateSnapshot(snapshot);
             graphicsRunner.render();
 
             auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(

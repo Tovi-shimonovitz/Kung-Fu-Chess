@@ -39,8 +39,12 @@ int main() {
     RenderableElement boardElement;
     bindBoardElement(canvas, renderer, boardElement, frameManager);
 
-    Controller controller(engine, boardMapper);
+    Controller controller(boardMapper, [&engine](Position src, Position dst) {
+        engine.requestMove(src, dst);
+    });
     GraphicsRunner graphicsRunner(canvas, controller, "KungFuChess");
+
+    controller.updateSnapshot(engine.getSnapshot());
 
     // click the white queen at (0,3), then click destination (3,3): straight move down the column
     controller.handleInput(pixelForCell(3), pixelForCell(0));
@@ -60,7 +64,9 @@ int main() {
         previousTime = now;
 
         engine.wait(elapsedMs);
-        canvas.refreshAll(engine.getSnapshot(), elapsedMs);
+        GameSnapshot snapshot = engine.getSnapshot();
+        canvas.refreshAll(snapshot, elapsedMs);
+        controller.updateSnapshot(snapshot);
         graphicsRunner.render();
     }
 

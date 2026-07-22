@@ -4,7 +4,6 @@
 #include "../connection_info.h"
 #include "../registry/connections_registry.h"
 #include "../protocol/messages.h"
-#include "../protocol/raw_message.h"
 
 class Matchmaker;
 class GamesRegistry;

@@ -19,6 +19,7 @@ public:
     bool isInsideBounds(const Position& pos) const;
     bool addPiece(const Position& pos, std::unique_ptr<Piece> piece);
     bool removePiece(const Position& pos);
+    Piece* replacePiece(const Position& pos, std::unique_ptr<Piece> piece);
     Piece* getPieceAt(const Position& pos) const;
     void movePiece(const Position& source, const Position& destination);
     std::vector<Piece*> getAllPieces() const;

@@ -203,6 +203,46 @@ void test_king_motion_completes_one_square() {
     log_test("test_king_motion_completes_one_square");
 }
 
+void test_white_pawn_promotes_to_queen_on_last_rank() {
+    Board board(8, 8);
+    board.addPiece({1, 3}, PieceFactory::createPiece(PieceColor::WHITE, PieceKind::PAWN, {1, 3}));
+    Piece* pawn = board.getPieceAt({1, 3});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(pawn, {1, 3}, {0, 3}); // 1 square forward -> 1000ms, arrives at last rank
+    WaitResult result = arbiter.advanceTime(1000, board);
+
+    Piece* promoted = board.getPieceAt({0, 3});
+    assert(promoted != nullptr);
+    assert(promoted != pawn); // a brand-new Piece was created, not the old pawn mutated
+    assert(promoted->kind == PieceKind::QUEEN);
+    assert(promoted->color == PieceColor::WHITE);
+    assert(promoted->state == PieceState::COOLDOWN);
+    assert(result.was_processed == true);
+
+    log_test("test_white_pawn_promotes_to_queen_on_last_rank");
+}
+
+void test_black_pawn_promotes_to_queen_on_last_rank() {
+    Board board(8, 8);
+    board.addPiece({6, 3}, PieceFactory::createPiece(PieceColor::BLACK, PieceKind::PAWN, {6, 3}));
+    Piece* pawn = board.getPieceAt({6, 3});
+    RealTimeArbiter arbiter;
+
+    arbiter.startMotion(pawn, {6, 3}, {7, 3}); // 1 square forward -> 1000ms, arrives at last rank
+    WaitResult result = arbiter.advanceTime(1000, board);
+
+    Piece* promoted = board.getPieceAt({7, 3});
+    assert(promoted != nullptr);
+    assert(promoted != pawn);
+    assert(promoted->kind == PieceKind::QUEEN);
+    assert(promoted->color == PieceColor::BLACK);
+    assert(promoted->state == PieceState::COOLDOWN);
+    assert(result.was_processed == true);
+
+    log_test("test_black_pawn_promotes_to_queen_on_last_rank");
+}
+
 int main() {
     std::cout << "========================================" << std::endl;
     std::cout << " STARTING REAL-TIME ARBITER UNIT TESTS " << std::endl;
@@ -218,6 +258,8 @@ int main() {
     test_bishop_motion_completes_diagonally();
     test_queen_motion_completes_diagonally();
     test_king_motion_completes_one_square();
+    test_white_pawn_promotes_to_queen_on_last_rank();
+    test_black_pawn_promotes_to_queen_on_last_rank();
 
     std::cout << "========================================" << std::endl;
     std::cout << " ALL TESTS EXECUTED                    " << std::endl;
