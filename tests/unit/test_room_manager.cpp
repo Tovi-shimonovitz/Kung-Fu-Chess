@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <variant>
 #include "../../include/network/core/room_manager.h"
 #include "../../include/network/core/game_server.h"
 #include "../../include/io/env_config.h"
@@ -53,9 +54,9 @@ void test_join_room_rejects_unknown_id() {
     GameServer server(registry);
     RoomManager rooms(registry, games, server, boardCsvPath());
 
-    auto error = rooms.joinRoom(1, 9999);
+    auto result = rooms.joinRoom(1, 9999);
 
-    assert(error.has_value());
+    assert(std::holds_alternative<std::string>(result));
     log_test("test_join_room_rejects_unknown_id");
 }
 
@@ -68,9 +69,10 @@ void test_second_joiner_becomes_black_and_activates_room() {
     RoomManager rooms(registry, games, server, boardCsvPath());
 
     RoomCreationResult created = rooms.createRoom(1);
-    auto error = rooms.joinRoom(2, created.gameId);
+    auto result = rooms.joinRoom(2, created.gameId);
 
-    assert(!error.has_value());
+    assert(std::holds_alternative<RoomJoinResult>(result));
+    assert(std::get<RoomJoinResult>(result).role == PlayerRole::Black);
     auto info = registry.get(2);
     assert(info->role == PlayerRole::Black);
     assert(info->status == ConnectionStatus::InGame);
@@ -89,9 +91,10 @@ void test_third_joiner_becomes_spectator_after_room_is_active() {
 
     RoomCreationResult created = rooms.createRoom(1);
     rooms.joinRoom(2, created.gameId);
-    auto error = rooms.joinRoom(3, created.gameId);
+    auto result = rooms.joinRoom(3, created.gameId);
 
-    assert(!error.has_value());
+    assert(std::holds_alternative<RoomJoinResult>(result));
+    assert(std::get<RoomJoinResult>(result).role == PlayerRole::Spectator);
     auto info = registry.get(3);
     assert(info->role == PlayerRole::Spectator);
     assert(info->status == ConnectionStatus::InGame);

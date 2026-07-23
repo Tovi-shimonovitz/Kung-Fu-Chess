@@ -13,6 +13,7 @@ public:
     void setStatus(ConnectionId id, ConnectionStatus status);
     void setUsername(ConnectionId id, const std::string& username);
     void setGame(ConnectionId id, GameId gameId, PlayerRole role);
+    void setRating(ConnectionId id, int rating);
 
 private:
     std::unordered_map<ConnectionId, ConnectionInfo> connections_;

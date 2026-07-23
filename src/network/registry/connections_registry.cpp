@@ -31,3 +31,8 @@ void ConnectionsRegistry::setGame(ConnectionId id, GameId gameId, PlayerRole rol
         it->second.role = role;
     }
 }
+
+void ConnectionsRegistry::setRating(ConnectionId id, int rating) {
+    auto it = connections_.find(id);
+    if (it != connections_.end()) it->second.rating = rating;
+}

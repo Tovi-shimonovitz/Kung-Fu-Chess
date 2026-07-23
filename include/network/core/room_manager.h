@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include "../connection_info.h"
 #include "../registry/connections_registry.h"
 #include "../registry/games_registry.h"
@@ -16,12 +17,18 @@ struct RoomCreationResult {
     GameSnapshot snapshot;
 };
 
+struct RoomJoinResult {
+    GameId gameId;
+    PlayerRole role;
+    GameSnapshot snapshot;
+};
+
 class RoomManager {
 public:
     RoomManager(ConnectionsRegistry& registry, GamesRegistry& games, GameServer& server, std::string boardCsvPath);
 
     RoomCreationResult createRoom(ConnectionId connectionId);
-    std::optional<std::string> joinRoom(ConnectionId connectionId, GameId gameId);
+    std::variant<RoomJoinResult, std::string> joinRoom(ConnectionId connectionId, GameId gameId);
 
 private:
     std::unique_ptr<Board> freshBoard() const;

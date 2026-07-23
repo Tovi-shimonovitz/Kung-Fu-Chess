@@ -22,26 +22,27 @@ RoomCreationResult RoomManager::createRoom(ConnectionId connectionId) {
     return RoomCreationResult{gameId, snapshot};
 }
 
-std::optional<std::string> RoomManager::joinRoom(ConnectionId connectionId, GameId gameId) {
+std::variant<RoomJoinResult, std::string> RoomManager::joinRoom(ConnectionId connectionId, GameId gameId) {
     auto pendingIt = pendingRooms_.find(gameId);
     if (pendingIt != pendingRooms_.end()) {
         PlayerRole role = pendingIt->second->join(connectionId);
         registry_.setGame(connectionId, gameId, role);
         registry_.setStatus(connectionId, ConnectionStatus::InGame);
+        GameSnapshot snapshot = pendingIt->second->snapshot();
 
         if (pendingIt->second->hasStarted()) {
             games_.activate(std::move(pendingIt->second), server_);
             pendingRooms_.erase(pendingIt);
         }
-        return std::nullopt;
+        return RoomJoinResult{gameId, role, snapshot};
     }
 
     if (auto worker = games_.find(gameId)) {
         registry_.setGame(connectionId, gameId, PlayerRole::Spectator);
         registry_.setStatus(connectionId, ConnectionStatus::InGame);
         worker->postAddSpectator(connectionId);
-        return std::nullopt;
+        return RoomJoinResult{gameId, PlayerRole::Spectator, GameSnapshot{}};
     }
 
-    return "ERROR: room not found";
+    return std::string("ERROR: room not found");
 }

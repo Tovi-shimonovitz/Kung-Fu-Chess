@@ -26,6 +26,10 @@ void GameServer::run(std::uint16_t port) {
     server_.run();
 }
 
+asio::io_context& GameServer::ioContext() {
+    return server_.get_io_service();
+}
+
 void GameServer::send(ConnectionId id, const std::string& text) {
     server_.get_io_service().post([this, id, text]() {
         auto it = idToHandle_.find(id);

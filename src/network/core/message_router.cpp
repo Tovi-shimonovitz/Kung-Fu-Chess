@@ -7,6 +7,7 @@
 #include "../../../include/network/room/room_worker.h"
 #include "../../../include/network/protocol/server_message_codec.h"
 #include <iostream>
+#include <variant>
 
 MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games,
                               AuthHandler& authHandler, RoomManager& roomManager)
@@ -51,6 +52,7 @@ std::optional<std::string> MessageRouter::handleRegister(ConnectionId connection
     }
 
     registry_.setUsername(connectionId, message.username);
+    registry_.setRating(connectionId, authHandler_.ratingOf(message.username));
     registry_.setStatus(connectionId, ConnectionStatus::Registered);
     std::cout << "[Router] " << message.username << " registered (connection "
               << connectionId << ")" << std::endl;
@@ -83,5 +85,11 @@ std::optional<std::string> MessageRouter::handleCreateRoom(ConnectionId connecti
 
 std::optional<std::string> MessageRouter::handleJoinRoom(ConnectionId connectionId, const RawMessage& raw) {
     JoinRoomMessage message = MessageCodec::parseJoinRoom(raw);
-    return roomManager_.joinRoom(connectionId, message.gameId);
+    auto result = roomManager_.joinRoom(connectionId, message.gameId);
+    if (auto* error = std::get_if<std::string>(&result)) {
+        return *error;
+    }
+    const RoomJoinResult& joined = std::get<RoomJoinResult>(result);
+    ServerRawMessage reply = ServerMessageCodec::toRaw(RoomJoinedMessage{joined.gameId, joined.role, joined.snapshot});
+    return ServerMessageCodec::serializeRaw(reply);
 }

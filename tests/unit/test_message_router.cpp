@@ -191,8 +191,11 @@ void test_create_then_join_room_makes_second_player_black() {
     RoomCreatedMessage created = ServerMessageCodec::parseRoomCreated(createRaw);
     assert(!created.snapshot.pieces.empty());
 
-    auto joinError = router.route(2, MessageCodec::toRaw(JoinRoomMessage{created.gameId}));
-    assert(!joinError.has_value());
+    auto joinReply = router.route(2, MessageCodec::toRaw(JoinRoomMessage{created.gameId}));
+    assert(joinReply.has_value());
+    ServerRawMessage joinRaw = ServerMessageCodec::parseRaw(*joinReply);
+    RoomJoinedMessage joined = ServerMessageCodec::parseRoomJoined(joinRaw);
+    assert(joined.role == PlayerRole::Black);
     assert(registry.get(2)->role == PlayerRole::Black);
     assert(registry.get(2)->status == ConnectionStatus::InGame);
 

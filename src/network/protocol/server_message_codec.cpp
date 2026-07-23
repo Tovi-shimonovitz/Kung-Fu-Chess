@@ -4,6 +4,23 @@
 namespace {
 const char* GAME_SNAPSHOT_TYPE = "game_snapshot";
 const char* ROOM_CREATED_TYPE = "room_created";
+const char* ROOM_JOINED_TYPE = "room_joined";
+
+std::string roleToString(PlayerRole role) {
+    switch (role) {
+        case PlayerRole::White: return "white";
+        case PlayerRole::Black: return "black";
+        case PlayerRole::Spectator: return "spectator";
+        default: return "none";
+    }
+}
+
+PlayerRole roleFromString(const std::string& text) {
+    if (text == "white") return PlayerRole::White;
+    if (text == "black") return PlayerRole::Black;
+    if (text == "spectator") return PlayerRole::Spectator;
+    return PlayerRole::None;
+}
 
 std::string colorToString(PieceColor color) {
     switch (color) {
@@ -63,6 +80,7 @@ std::string ServerMessageCodec::typeToString(ServerMessageType type) {
     switch (type) {
         case ServerMessageType::GameSnapshot: return GAME_SNAPSHOT_TYPE;
         case ServerMessageType::RoomCreated: return ROOM_CREATED_TYPE;
+        case ServerMessageType::RoomJoined: return ROOM_JOINED_TYPE;
         default: throw std::runtime_error("ERROR UNKNOWN_SERVER_MESSAGE_TYPE");
     }
 }
@@ -70,6 +88,7 @@ std::string ServerMessageCodec::typeToString(ServerMessageType type) {
 ServerMessageType ServerMessageCodec::typeFromString(const std::string& text) {
     if (text == GAME_SNAPSHOT_TYPE) return ServerMessageType::GameSnapshot;
     if (text == ROOM_CREATED_TYPE) return ServerMessageType::RoomCreated;
+    if (text == ROOM_JOINED_TYPE) return ServerMessageType::RoomJoined;
     throw std::runtime_error("ERROR UNKNOWN_SERVER_MESSAGE_TYPE: " + text);
 }
 
@@ -138,6 +157,24 @@ ServerRawMessage ServerMessageCodec::toRaw(const RoomCreatedMessage& message) {
     ServerRawMessage raw;
     raw.type = ServerMessageType::RoomCreated;
     raw.payload["gameId"] = message.gameId;
+    raw.payload["snapshot"] = toRaw(message.snapshot).payload;
+    return raw;
+}
+
+RoomJoinedMessage ServerMessageCodec::parseRoomJoined(const ServerRawMessage& raw) {
+    RoomJoinedMessage message;
+    message.gameId = raw.payload.at("gameId").get<GameId>();
+    message.role = roleFromString(raw.payload.at("role").get<std::string>());
+    ServerRawMessage snapshotRaw{ServerMessageType::GameSnapshot, raw.payload.at("snapshot")};
+    message.snapshot = parseGameSnapshot(snapshotRaw);
+    return message;
+}
+
+ServerRawMessage ServerMessageCodec::toRaw(const RoomJoinedMessage& message) {
+    ServerRawMessage raw;
+    raw.type = ServerMessageType::RoomJoined;
+    raw.payload["gameId"] = message.gameId;
+    raw.payload["role"] = roleToString(message.role);
     raw.payload["snapshot"] = toRaw(message.snapshot).payload;
     return raw;
 }

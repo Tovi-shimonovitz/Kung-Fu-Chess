@@ -5,7 +5,8 @@
 
 enum class ServerMessageType {
     GameSnapshot,
-    RoomCreated
+    RoomCreated,
+    RoomJoined
 };
 
 struct ServerRawMessage {
@@ -15,5 +16,11 @@ struct ServerRawMessage {
 
 struct RoomCreatedMessage {
     GameId gameId;
+    GameSnapshot snapshot;
+};
+
+struct RoomJoinedMessage {
+    GameId gameId;
+    PlayerRole role;
     GameSnapshot snapshot;
 };

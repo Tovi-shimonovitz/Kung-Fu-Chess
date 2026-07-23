@@ -1,4 +1,5 @@
 #pragma once
+#include <asio.hpp>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -17,6 +18,7 @@ public:
     void setRouter(MessageRouter& router);
     void run(std::uint16_t port);
     void send(ConnectionId id, const std::string& text);
+    asio::io_context& ioContext();
 
 private:
     using WsServer = websocketpp::server<websocketpp::config::asio>;

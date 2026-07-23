@@ -14,6 +14,9 @@ public:
     static RoomCreatedMessage parseRoomCreated(const ServerRawMessage& raw);
     static ServerRawMessage toRaw(const RoomCreatedMessage& message);
 
+    static RoomJoinedMessage parseRoomJoined(const ServerRawMessage& raw);
+    static ServerRawMessage toRaw(const RoomJoinedMessage& message);
+
 private:
     static std::string typeToString(ServerMessageType type);
     static ServerMessageType typeFromString(const std::string& text);

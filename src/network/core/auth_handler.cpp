@@ -19,3 +19,8 @@ std::optional<std::string> AuthHandler::authenticate(const std::string& username
     userRepository_.create(username, hash, salt);
     return std::nullopt;
 }
+
+int AuthHandler::ratingOf(const std::string& username) {
+    auto record = userRepository_.findByUsername(username);
+    return record ? record->rating : 1200;
+}

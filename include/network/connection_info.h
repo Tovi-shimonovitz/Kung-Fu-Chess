@@ -25,4 +25,5 @@ struct ConnectionInfo {
     std::string username;
     std::optional<GameId> gameId;
     PlayerRole role = PlayerRole::None;
+    int rating = 1200;
 };
