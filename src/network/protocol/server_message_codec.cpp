@@ -3,6 +3,7 @@
 
 namespace {
 const char* GAME_SNAPSHOT_TYPE = "game_snapshot";
+const char* ROOM_CREATED_TYPE = "room_created";
 
 std::string colorToString(PieceColor color) {
     switch (color) {
@@ -61,12 +62,14 @@ PieceState stateFromString(const std::string& text) {
 std::string ServerMessageCodec::typeToString(ServerMessageType type) {
     switch (type) {
         case ServerMessageType::GameSnapshot: return GAME_SNAPSHOT_TYPE;
+        case ServerMessageType::RoomCreated: return ROOM_CREATED_TYPE;
         default: throw std::runtime_error("ERROR UNKNOWN_SERVER_MESSAGE_TYPE");
     }
 }
 
 ServerMessageType ServerMessageCodec::typeFromString(const std::string& text) {
     if (text == GAME_SNAPSHOT_TYPE) return ServerMessageType::GameSnapshot;
+    if (text == ROOM_CREATED_TYPE) return ServerMessageType::RoomCreated;
     throw std::runtime_error("ERROR UNKNOWN_SERVER_MESSAGE_TYPE: " + text);
 }
 
@@ -120,5 +123,21 @@ ServerRawMessage ServerMessageCodec::toRaw(const GameSnapshot& snapshot) {
         });
     }
     raw.payload["pieces"] = piecesJson;
+    return raw;
+}
+
+RoomCreatedMessage ServerMessageCodec::parseRoomCreated(const ServerRawMessage& raw) {
+    RoomCreatedMessage message;
+    message.gameId = raw.payload.at("gameId").get<GameId>();
+    ServerRawMessage snapshotRaw{ServerMessageType::GameSnapshot, raw.payload.at("snapshot")};
+    message.snapshot = parseGameSnapshot(snapshotRaw);
+    return message;
+}
+
+ServerRawMessage ServerMessageCodec::toRaw(const RoomCreatedMessage& message) {
+    ServerRawMessage raw;
+    raw.type = ServerMessageType::RoomCreated;
+    raw.payload["gameId"] = message.gameId;
+    raw.payload["snapshot"] = toRaw(message.snapshot).payload;
     return raw;
 }

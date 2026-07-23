@@ -53,3 +53,11 @@ void RoomWorker::postMoveRequest(ConnectionId connectionId, Position src, Positi
         }
     });
 }
+
+void RoomWorker::postAddSpectator(ConnectionId connectionId) {
+    auto self = shared_from_this();
+    asio::post(strand_, [self, connectionId] {
+        if (self->stopped_) return;
+        self->room_->addSpectator(connectionId);
+    });
+}

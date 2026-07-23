@@ -16,6 +16,7 @@ public:
     void send(const ClientMessage& message);
 
     std::optional<GameSnapshot> latestSnapshot() const;
+    std::optional<GameId> latestRoomId() const;
 
 private:
     using WsClient = websocketpp::client<websocketpp::config::asio_client>;
@@ -27,4 +28,5 @@ private:
     websocketpp::connection_hdl handle_;
     bool connected_ = false;
     std::optional<GameSnapshot> latestSnapshot_;
+    std::optional<GameId> latestRoomId_;
 };

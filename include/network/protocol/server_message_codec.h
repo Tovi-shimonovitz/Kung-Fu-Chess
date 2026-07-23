@@ -11,6 +11,9 @@ public:
     static GameSnapshot parseGameSnapshot(const ServerRawMessage& raw);
     static ServerRawMessage toRaw(const GameSnapshot& snapshot);
 
+    static RoomCreatedMessage parseRoomCreated(const ServerRawMessage& raw);
+    static ServerRawMessage toRaw(const RoomCreatedMessage& message);
+
 private:
     static std::string typeToString(ServerMessageType type);
     static ServerMessageType typeFromString(const std::string& text);

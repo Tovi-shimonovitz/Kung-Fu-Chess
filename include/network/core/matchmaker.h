@@ -23,5 +23,4 @@ private:
     std::string boardCsvPath_;
 
     std::unique_ptr<GameRoom> pendingRoom_;
-    GameId nextGameId_ = 1;
 };

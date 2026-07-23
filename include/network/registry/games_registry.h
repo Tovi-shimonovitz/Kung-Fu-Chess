@@ -12,10 +12,13 @@ class GamesRegistry {
 public:
     explicit GamesRegistry(std::size_t threadCount = std::thread::hardware_concurrency());
 
+    GameId allocateId();
+
     std::shared_ptr<RoomWorker> activate(std::unique_ptr<GameRoom> room, GameServer& server);
     std::shared_ptr<RoomWorker> find(GameId id);
 
 private:
     GameWorkerPool pool_;
     std::unordered_map<GameId, std::shared_ptr<RoomWorker>> workers_;
+    GameId nextId_ = 1;
 };

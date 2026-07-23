@@ -41,12 +41,20 @@ std::optional<GameSnapshot> NetworkClient::latestSnapshot() const {
     return latestSnapshot_;
 }
 
+std::optional<GameId> NetworkClient::latestRoomId() const {
+    return latestRoomId_;
+}
+
 void NetworkClient::onMessage(websocketpp::connection_hdl, WsClient::message_ptr msg) {
     std::string payload = msg->get_payload();
     try {
         ServerRawMessage raw = ServerMessageCodec::parseRaw(payload);
         if (raw.type == ServerMessageType::GameSnapshot) {
             latestSnapshot_ = ServerMessageCodec::parseGameSnapshot(raw);
+        } else if (raw.type == ServerMessageType::RoomCreated) {
+            RoomCreatedMessage roomCreated = ServerMessageCodec::parseRoomCreated(raw);
+            latestRoomId_ = roomCreated.gameId;
+            latestSnapshot_ = roomCreated.snapshot;
         }
     } catch (const std::exception&) {
         std::cout << "[NetworkClient] server message: " << payload << std::endl;

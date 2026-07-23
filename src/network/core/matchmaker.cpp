@@ -11,7 +11,7 @@ std::unique_ptr<Board> Matchmaker::freshBoard() const {
 
 void Matchmaker::handlePlayRequest(ConnectionId connectionId) {
     if (!pendingRoom_) {
-        pendingRoom_ = std::make_unique<GameRoom>(nextGameId_++, freshBoard());
+        pendingRoom_ = std::make_unique<GameRoom>(games_.allocateId(), freshBoard());
     }
 
     PlayerRole role = pendingRoom_->join(connectionId);

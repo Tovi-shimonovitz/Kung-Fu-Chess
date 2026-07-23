@@ -13,6 +13,7 @@ public:
 
     GameId id() const;
     PlayerRole join(ConnectionId connectionId);
+    void addSpectator(ConnectionId connectionId);
     bool hasStarted() const;
 
     std::optional<ConnectionId> whiteConnectionId() const;

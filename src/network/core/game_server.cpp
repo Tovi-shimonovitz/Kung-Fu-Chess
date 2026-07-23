@@ -63,8 +63,8 @@ void GameServer::onMessage(ConnectionHandle handle, WsServer::message_ptr msg) {
 
     try {
         RawMessage raw = MessageCodec::parseRaw(msg->get_payload());
-        auto error = router_->route(id, raw);
-        if (error) send(id, *error);
+        auto reply = router_->route(id, raw);
+        if (reply) send(id, *reply);
     } catch (const std::exception& e) {
         send(id, std::string("ERROR: ") + e.what());
     }

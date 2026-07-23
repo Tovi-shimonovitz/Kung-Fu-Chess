@@ -8,6 +8,7 @@
 #include "../include/network/core/message_router.h"
 #include "../include/db/user_repository.h"
 #include "../include/network/core/auth_handler.h"
+#include "../include/network/core/room_manager.h"
 
 int main() {
     const std::uint16_t port = 9002;
@@ -20,7 +21,8 @@ int main() {
     Matchmaker matchmaker(registry, games, server, env.get("BOARD_CSV_PATH"));
     UserRepository userRepository(env.get("DB_PATH"));
     AuthHandler authHandler(userRepository);
-    MessageRouter router(registry, matchmaker, games, authHandler);
+    RoomManager roomManager(registry, games, server, env.get("BOARD_CSV_PATH"));
+    MessageRouter router(registry, matchmaker, games, authHandler, roomManager);
     server.setRouter(router);
 
     std::cout << "Kung-Fu Chess server starting..." << std::endl;

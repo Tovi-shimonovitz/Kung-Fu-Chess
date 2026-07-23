@@ -3,6 +3,10 @@
 
 GamesRegistry::GamesRegistry(std::size_t threadCount) : pool_(threadCount) {}
 
+GameId GamesRegistry::allocateId() {
+    return nextId_++;
+}
+
 std::shared_ptr<RoomWorker> GamesRegistry::activate(std::unique_ptr<GameRoom> room, GameServer& server) {
     GameId id = room->id();
     auto worker = RoomWorker::create(pool_.ioContext(), std::move(room), server);

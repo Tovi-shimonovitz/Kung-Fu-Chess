@@ -5,6 +5,8 @@ namespace {
 const char* REGISTER_TYPE = "register";
 const char* PLAY_REQUEST_TYPE = "play_request";
 const char* MOVE_REQUEST_TYPE = "move_request";
+const char* CREATE_ROOM_TYPE = "create_room";
+const char* JOIN_ROOM_TYPE = "join_room";
 }
 
 std::string MessageCodec::typeToString(MessageType type) {
@@ -12,6 +14,8 @@ std::string MessageCodec::typeToString(MessageType type) {
         case MessageType::Register: return REGISTER_TYPE;
         case MessageType::PlayRequest: return PLAY_REQUEST_TYPE;
         case MessageType::MoveRequest: return MOVE_REQUEST_TYPE;
+        case MessageType::CreateRoom: return CREATE_ROOM_TYPE;
+        case MessageType::JoinRoom: return JOIN_ROOM_TYPE;
         default: throw std::runtime_error("ERROR UNKNOWN_MESSAGE_TYPE");
     }
 }
@@ -20,6 +24,8 @@ MessageType MessageCodec::typeFromString(const std::string& text) {
     if (text == REGISTER_TYPE) return MessageType::Register;
     if (text == PLAY_REQUEST_TYPE) return MessageType::PlayRequest;
     if (text == MOVE_REQUEST_TYPE) return MessageType::MoveRequest;
+    if (text == CREATE_ROOM_TYPE) return MessageType::CreateRoom;
+    if (text == JOIN_ROOM_TYPE) return MessageType::JoinRoom;
     throw std::runtime_error("ERROR UNKNOWN_MESSAGE_TYPE: " + text);
 }
 
@@ -81,6 +87,32 @@ RawMessage MessageCodec::toRaw(const MoveRequestMessage& message) {
     return raw;
 }
 
+CreateRoomMessage MessageCodec::parseCreateRoom(const RawMessage& raw) {
+    (void)raw;
+    return CreateRoomMessage{};
+}
+
+RawMessage MessageCodec::toRaw(const CreateRoomMessage& message) {
+    (void)message;
+    RawMessage raw;
+    raw.type = MessageType::CreateRoom;
+    raw.payload = nlohmann::json::object();
+    return raw;
+}
+
+JoinRoomMessage MessageCodec::parseJoinRoom(const RawMessage& raw) {
+    return JoinRoomMessage(raw.payload.at("gameId").get<GameId>());
+}
+
+RawMessage MessageCodec::toRaw(const JoinRoomMessage& message) {
+    RawMessage raw;
+    raw.type = MessageType::JoinRoom;
+    raw.payload["gameId"] = message.gameId;
+    return raw;
+}
+
 RawMessage RegisterMessage::toRaw() const { return MessageCodec::toRaw(*this); }
 RawMessage PlayRequestMessage::toRaw() const { return MessageCodec::toRaw(*this); }
 RawMessage MoveRequestMessage::toRaw() const { return MessageCodec::toRaw(*this); }
+RawMessage CreateRoomMessage::toRaw() const { return MessageCodec::toRaw(*this); }
+RawMessage JoinRoomMessage::toRaw() const { return MessageCodec::toRaw(*this); }

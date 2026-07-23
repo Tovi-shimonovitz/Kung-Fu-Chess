@@ -18,6 +18,7 @@ public:
     RoomWorker& operator=(const RoomWorker&) = delete;
 
     void postMoveRequest(ConnectionId connectionId, Position src, Position dst);
+    void postAddSpectator(ConnectionId connectionId);
 
 private:
     RoomWorker(asio::io_context& sharedIoContext, std::unique_ptr<GameRoom> room, GameServer& server);

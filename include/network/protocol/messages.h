@@ -2,11 +2,14 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include "../../model/Position.h"
+#include "../connection_info.h"
 
 enum class MessageType {
     Register,
     PlayRequest,
-    MoveRequest
+    MoveRequest,
+    CreateRoom,
+    JoinRoom
 };
 
 struct RawMessage {
@@ -39,5 +42,17 @@ struct MoveRequestMessage : public ClientMessage {
     Position to;
 
     MoveRequestMessage(Position from, Position to) : from(from), to(to) {}
+    RawMessage toRaw() const override;
+};
+
+struct CreateRoomMessage : public ClientMessage {
+    CreateRoomMessage() = default;
+    RawMessage toRaw() const override;
+};
+
+struct JoinRoomMessage : public ClientMessage {
+    GameId gameId;
+
+    explicit JoinRoomMessage(GameId gameId) : gameId(gameId) {}
     RawMessage toRaw() const override;
 };

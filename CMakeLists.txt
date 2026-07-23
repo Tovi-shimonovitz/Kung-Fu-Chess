@@ -151,6 +151,7 @@ set(UNIT_TESTS
     test_server_message_codec
     test_db
     test_game_worker_pool
+    test_room_manager
 )
 
 foreach(test_name ${UNIT_TESTS})

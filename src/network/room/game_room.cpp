@@ -21,6 +21,10 @@ PlayerRole GameRoom::join(ConnectionId connectionId) {
     return PlayerRole::Spectator;
 }
 
+void GameRoom::addSpectator(ConnectionId connectionId) {
+    spectatorIds_.push_back(connectionId);
+}
+
 bool GameRoom::hasStarted() const {
     return whiteId_.has_value() && blackId_.has_value();
 }

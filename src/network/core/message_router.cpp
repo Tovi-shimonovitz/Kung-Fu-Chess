@@ -2,17 +2,23 @@
 #include "../../../include/network/protocol/message_codec.h"
 #include "../../../include/network/core/matchmaker.h"
 #include "../../../include/network/core/auth_handler.h"
+#include "../../../include/network/core/room_manager.h"
 #include "../../../include/network/registry/games_registry.h"
 #include "../../../include/network/room/room_worker.h"
+#include "../../../include/network/protocol/server_message_codec.h"
 #include <iostream>
 
-MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games, AuthHandler& authHandler)
-    : registry_(registry), matchmaker_(matchmaker), games_(games), authHandler_(authHandler) {}
+MessageRouter::MessageRouter(ConnectionsRegistry& registry, Matchmaker& matchmaker, GamesRegistry& games,
+                              AuthHandler& authHandler, RoomManager& roomManager)
+    : registry_(registry), matchmaker_(matchmaker), games_(games), authHandler_(authHandler), roomManager_(roomManager) {}
 
 bool MessageRouter::isAllowed(ConnectionStatus status, MessageType type) const {
     switch (status) {
         case ConnectionStatus::Connected: return type == MessageType::Register;
-        case ConnectionStatus::Registered: return type == MessageType::PlayRequest;
+        case ConnectionStatus::Registered:
+            return type == MessageType::PlayRequest
+                || type == MessageType::CreateRoom
+                || type == MessageType::JoinRoom;
         case ConnectionStatus::InGame: return type == MessageType::MoveRequest;
     }
     return false;
@@ -30,6 +36,8 @@ std::optional<std::string> MessageRouter::route(ConnectionId connectionId, const
         case MessageType::Register: return handleRegister(connectionId, raw);
         case MessageType::PlayRequest: handlePlayRequest(connectionId, raw); break;
         case MessageType::MoveRequest: handleMoveRequest(connectionId, raw); break;
+        case MessageType::CreateRoom: return handleCreateRoom(connectionId, raw);
+        case MessageType::JoinRoom: return handleJoinRoom(connectionId, raw);
     }
     return std::nullopt;
 }
@@ -64,4 +72,16 @@ void MessageRouter::handleMoveRequest(ConnectionId connectionId, const RawMessag
     if (!room) return;
 
     room->postMoveRequest(connectionId, message.from, message.to);
+}
+
+std::optional<std::string> MessageRouter::handleCreateRoom(ConnectionId connectionId, const RawMessage& raw) {
+    MessageCodec::parseCreateRoom(raw);
+    RoomCreationResult created = roomManager_.createRoom(connectionId);
+    ServerRawMessage reply = ServerMessageCodec::toRaw(RoomCreatedMessage{created.gameId, created.snapshot});
+    return ServerMessageCodec::serializeRaw(reply);
+}
+
+std::optional<std::string> MessageRouter::handleJoinRoom(ConnectionId connectionId, const RawMessage& raw) {
+    JoinRoomMessage message = MessageCodec::parseJoinRoom(raw);
+    return roomManager_.joinRoom(connectionId, message.gameId);
 }
